@@ -186,6 +186,42 @@ table.cnt td.neg{color:var(--danger);font-weight:600}
 table.cnt td.name{font-weight:600}
 .rules{margin:0;padding-left:18px;line-height:1.6;color:var(--fg);font-size:13px}
 
+/* icônes (deux tons : bleu nuit + turquoise ; variante claire sur fond foncé) */
+.ic{flex:none;display:inline-block;vertical-align:-3px;--i1:#1D2D44;--i2:#38ABAE;--i0:#FFFFFF}
+.ic .f1{fill:var(--i1)}.ic .f2{fill:var(--i2)}.ic .f0{fill:var(--i0)}
+.ic .s1{stroke:var(--i1)}.ic .s2{stroke:var(--i2)}.ic .s0{stroke:var(--i0)}
+.ic.inv,.grid thead .ic,.dk .ic,.dk.ic,.chip.cat.dk .ic,.tabs button[aria-selected="true"] .ic{--i1:#FFFFFF;--i0:#1D2D44}
+.tabs button{display:inline-flex;align-items:center;gap:8px}
+.grid th .thi{display:inline-flex;align-items:center;gap:6px}
+.pill{gap:5px}
+.mhalf .tx{display:flex;align-items:center;gap:6px}
+.card h3{display:flex;align-items:center;gap:8px}
+.rcard h3{display:flex;align-items:center;gap:8px}
+table.cnt thead th .thi{display:inline-flex;align-items:center;gap:5px}
+.catcard .icprev{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:6px;background:#E2F1F2}
+
+/* choix de catégorie dans le panneau de saisie */
+.cpick{display:flex;flex-wrap:wrap;gap:5px}
+.cpick button{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line-strong);background:var(--surface);color:var(--fg);border-radius:999px;padding:3px 10px 3px 6px;font-size:12px;font-weight:600;line-height:1.4}
+.cpick button[aria-pressed="true"]{background:var(--c);color:var(--ink,color-mix(in oklab,var(--c) var(--ink-mix),var(--ink-base)));border-color:currentColor;box-shadow:0 0 0 1px currentColor}
+.cpick button[aria-pressed="true"].dk{color:#fff}
+.cpick button:not([aria-pressed="true"]) .ic{opacity:.8}
+.cnote{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-height:18px;line-height:1.4}
+.cnote button{border:0;background:none;color:var(--accent-ink);font-weight:700;padding:0;font-size:12px;text-decoration:underline;text-underline-offset:2px}
+
+/* tampon */
+.btn.stamp{display:inline-flex;align-items:center;gap:6px;border-color:var(--accent);color:var(--accent-ink);font-weight:700}
+.stampbar{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:18;background:var(--brand);color:#fff;border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.28);padding:8px 8px 8px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;max-width:calc(100% - 32px);box-sizing:border-box;font-size:14px}
+.stampbar .pill{min-height:30px;max-width:220px;overflow-wrap:anywhere}
+.stampbar .sb-hint{color:#C9D3DC;font-size:13px}
+.stampbar button{border:1px solid rgba(255,255,255,.35);background:transparent;color:#fff;border-radius:8px;padding:7px 12px;font-weight:700;min-height:36px}
+.stampbar button.end{background:#fff;color:var(--brand);border-color:#fff}
+.stampbar button:disabled{opacity:.4;cursor:default}
+body.stamping .grid td[data-r]:not(.ro){cursor:copy}
+body.stamping .grid td[data-r]:hover{box-shadow:inset 0 0 0 2px var(--accent),inset 0 0 0 4px #fff}
+body.stamping .mhalf,body.stamping .rrow{cursor:copy}
+body.stamping .gridwrap{padding-bottom:72px;box-sizing:border-box}
+
 /* ---- phone (portrait) ---- */
 .mobile-only{display:none}
 .mv{padding-block:12px 28px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:12px;background:var(--bg);min-height:100%;box-sizing:border-box}
@@ -247,6 +283,11 @@ table.cnt td.name{font-weight:600}
   .nav button{min-height:38px;min-width:42px}
   .tabs{position:fixed;left:0;right:0;bottom:0;z-index:15;border-radius:0;background:var(--brand-deep);padding:6px max(10px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(10px,env(safe-area-inset-left,0px));gap:6px;box-shadow:0 -4px 14px rgba(0,0,0,.18)}
   .tabs button{flex:1;padding:11px 6px;border-radius:10px;font-size:15px;color:#C9D3DC}
+  .tabs button{justify-content:center}
+  .tabs button .ic{--i1:#FFFFFF;--i0:#1D2D44}
+  .tabs button[aria-selected="true"] .ic{--i1:#1D2D44;--i0:#FFFFFF}
+  .stampbar{left:12px;right:12px;transform:none;max-width:none;bottom:calc(70px + env(safe-area-inset-bottom,0px))}
+  .stampbar .sb-hint{flex-basis:100%;order:5}
   .tabs button[aria-selected="true"]{background:#fff;color:var(--marque-bleu-fonce)}
   .nav .month{font-size:16px;min-width:0}
   .grid td.date{width:92px;min-width:92px;padding:2px 8px}
@@ -337,9 +378,9 @@ table.cnt td.name{font-weight:600}
       <button type="button" data-mode="full" aria-pressed="true">Journée entière</button>
       <button type="button" data-mode="half" aria-pressed="false">Matin / Après-midi</button>
     </div>
-    <div class="field" id="fFull"><label for="edFull">Journée</label><input type="text" id="edFull" autocomplete="off"><div class="prev" id="pvFull"></div></div>
-    <div class="field" id="fAm" hidden><label for="edAm">Matin</label><input type="text" id="edAm" autocomplete="off"><div class="prev" id="pvAm"></div></div>
-    <div class="field" id="fPm" hidden><label for="edPm">Après-midi</label><input type="text" id="edPm" autocomplete="off"><div class="prev" id="pvPm"></div></div>
+    <div class="field" id="fFull"><label for="edFull">Journée</label><input type="text" id="edFull" autocomplete="off"><div class="cpick" id="cpFull" role="group" aria-label="Catégorie de la journée"></div><div class="cnote" id="pvFull"></div></div>
+    <div class="field" id="fAm" hidden><label for="edAm">Matin</label><input type="text" id="edAm" autocomplete="off"><div class="cpick" id="cpAm" role="group" aria-label="Catégorie du matin"></div><div class="cnote" id="pvAm"></div></div>
+    <div class="field" id="fPm" hidden><label for="edPm">Après-midi</label><input type="text" id="edPm" autocomplete="off"><div class="cpick" id="cpPm" role="group" aria-label="Catégorie de l'après-midi"></div><div class="cnote" id="pvPm"></div></div>
     <div class="vehbox" id="edVeh" hidden></div>
     <div class="field"><label>Saisie rapide</label><div class="quick" id="edQuick"></div></div>
     <div class="field"><label for="edUntil">Répéter jusqu'au (optionnel)</label><input type="date" id="edUntil">
@@ -348,10 +389,12 @@ table.cnt td.name{font-weight:600}
   <footer>
     <button class="btn danger" id="edClear" type="button">Effacer</button>
     <span style="flex:1"></span>
+    <button class="btn stamp" id="edStamp" type="button" title="Enregistre cette saisie et la garde en tampon : clique ensuite sur d'autres cases pour la coller">Copier</button>
     <button class="btn" id="edCancel" type="button">Annuler</button>
     <button class="btn primary" id="edSave" type="button">Enregistrer</button>
   </footer>
 </aside>
+<div class="stampbar" id="stampBar" hidden role="status" aria-live="polite"></div>
 
 <div class="auth" id="auth" hidden>
   <div class="authcard">
@@ -398,6 +441,12 @@ const QUICK = ["CP","RTT","Télétravail","Arrêt maladie","Réunion","Nuit"];
 const MONTHS = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
 const DAYS = ["dim.","lun.","mar.","mer.","jeu.","ven.","sam."];
 const DAYS_LONG = ["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
+
+// ---------- icônes (charte : bleu nuit #1D2D44, turquoise #38ABAE) ----------
+const ICONS = {"maladie":"<path class=\"s1\" d=\"M18 13V10a2.5 2.5 0 0 1 2.5-2.5h7A2.5 2.5 0 0 1 30 10v3\" fill=\"none\" stroke-width=\"4\" stroke-linecap=\"round\"/><rect class=\"f1\" x=\"5\" y=\"13\" width=\"38\" height=\"28\" rx=\"5\"/><rect class=\"f2\" x=\"20.5\" y=\"18.5\" width=\"7\" height=\"17\" rx=\"1.5\"/><rect class=\"f2\" x=\"15.5\" y=\"23.5\" width=\"17\" height=\"7\" rx=\"1.5\"/>","conges":"<path class=\"f2\" d=\"M5 22C8 11.5 15.5 6 24 6S40 11.5 43 22C39.5 19 35 19 31.5 22C28 19 20 19 16.5 22C13 19 8.5 19 5 22Z\"/><circle class=\"f1\" cx=\"24\" cy=\"5\" r=\"2.2\"/><line class=\"s1\" x1=\"24\" y1=\"20\" x2=\"24\" y2=\"37\" stroke-width=\"4\" stroke-linecap=\"round\"/><path class=\"s1\" d=\"M5 42.5q4.75-4 9.5 0t9.5 0t9.5 0t9.5 0\" fill=\"none\" stroke-width=\"3.6\" stroke-linecap=\"round\"/>","rtt":"<path class=\"s1\" d=\"M11 18.5A15 15 0 1 1 9.9 31.1\" fill=\"none\" stroke-width=\"4\" stroke-linecap=\"round\"/><polygon class=\"f2 s2\" points=\"9,22.5 16.2,19.2 7.8,14.2\" stroke-width=\"1.5\" stroke-linejoin=\"round\"/><path class=\"s2\" d=\"M24 18v8l6 3.5\" fill=\"none\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><circle class=\"f1\" cx=\"24\" cy=\"26\" r=\"2.6\"/>","bureau":"<rect class=\"f1\" x=\"10\" y=\"6\" width=\"28\" height=\"36\" rx=\"3\"/><rect class=\"f2\" x=\"15\" y=\"11\" width=\"7\" height=\"5\" rx=\"1\"/><rect class=\"f2\" x=\"26\" y=\"11\" width=\"7\" height=\"5\" rx=\"1\"/><rect class=\"f2\" x=\"15\" y=\"20\" width=\"7\" height=\"5\" rx=\"1\"/><rect class=\"f2\" x=\"26\" y=\"20\" width=\"7\" height=\"5\" rx=\"1\"/><rect class=\"f2\" x=\"20\" y=\"30\" width=\"8\" height=\"12\" rx=\"1.5\"/><line class=\"s1\" x1=\"5\" y1=\"42\" x2=\"43\" y2=\"42\" stroke-width=\"4\" stroke-linecap=\"round\"/>","terrain":"<path class=\"f2\" d=\"M9 35C9 23 15.5 15 24 15S39 23 39 35Z\"/><rect class=\"f1\" x=\"20.5\" y=\"11\" width=\"7\" height=\"16\" rx=\"3.5\"/><rect class=\"f1\" x=\"4\" y=\"33\" width=\"40\" height=\"7\" rx=\"3.5\"/>","teletravail":"<path class=\"f1 s1\" d=\"M24 5L3 23h6v19h30V23h6Z\" stroke-width=\"1.5\" stroke-linejoin=\"round\"/><rect class=\"f2\" x=\"15.5\" y=\"23\" width=\"17\" height=\"11\" rx=\"1.5\"/><rect class=\"f2\" x=\"12.5\" y=\"35.5\" width=\"23\" height=\"3.2\" rx=\"1.6\"/>","reunion":"<rect class=\"f1\" x=\"3\" y=\"6\" width=\"27\" height=\"20\" rx=\"5\"/><path class=\"f1 s1\" d=\"M9 25v7l8-7Z\" stroke-width=\"1.5\" stroke-linejoin=\"round\"/><circle class=\"f0\" cx=\"10\" cy=\"16\" r=\"2.2\"/><circle class=\"f0\" cx=\"16.5\" cy=\"16\" r=\"2.2\"/><circle class=\"f0\" cx=\"23\" cy=\"16\" r=\"2.2\"/><rect class=\"f2\" x=\"19\" y=\"19.5\" width=\"26\" height=\"18\" rx=\"5\"/><path class=\"f2 s2\" d=\"M39 37v6l-7-6Z\" stroke-width=\"1.5\" stroke-linejoin=\"round\"/>","nuit":"<path class=\"f1\" d=\"M21.7 10A16 16 0 1 0 37.3 30.8A13 13 0 0 1 21.7 10Z\"/><path class=\"f2\" d=\"M35 4.5 Q35 10 40.5 10 Q35 10 35 15.5 Q35 10 29.5 10 Q35 10 35 4.5Z\"/><path class=\"f2\" d=\"M42.5 17.2 Q42.5 21 46.3 21 Q42.5 21 42.5 24.8 Q42.5 21 38.7 21 Q42.5 21 42.5 17.2Z\"/>","ferie":"<rect class=\"f1\" x=\"5\" y=\"9\" width=\"38\" height=\"33\" rx=\"5\"/><path class=\"f2\" d=\"M5 14a5 5 0 0 1 5-5h28a5 5 0 0 1 5 5v4H5Z\"/><rect class=\"f1\" x=\"13\" y=\"4.5\" width=\"4.5\" height=\"9\" rx=\"2.25\"/><rect class=\"f1\" x=\"30.5\" y=\"4.5\" width=\"4.5\" height=\"9\" rx=\"2.25\"/><polygon class=\"f2 s2\" points=\"24.00,22.00 26.17,27.51 32.08,27.87 27.52,31.64 29.00,37.38 24.00,34.20 19.00,37.38 20.48,31.64 15.92,27.87 21.83,27.51\" stroke-width=\"1\" stroke-linejoin=\"round\"/>","date":"<rect class=\"f1\" x=\"5\" y=\"9\" width=\"38\" height=\"33\" rx=\"5\"/><path class=\"f2\" d=\"M5 14a5 5 0 0 1 5-5h28a5 5 0 0 1 5 5v4H5Z\"/><rect class=\"f1\" x=\"13\" y=\"4.5\" width=\"4.5\" height=\"9\" rx=\"2.25\"/><rect class=\"f1\" x=\"30.5\" y=\"4.5\" width=\"4.5\" height=\"9\" rx=\"2.25\"/><rect class=\"f0\" x=\"10\" y=\"22.5\" width=\"7\" height=\"6\" rx=\"1\"/><rect class=\"f0\" x=\"20.5\" y=\"22.5\" width=\"7\" height=\"6\" rx=\"1\"/><rect class=\"f2\" x=\"31\" y=\"22.5\" width=\"7\" height=\"6\" rx=\"1\"/><rect class=\"f0\" x=\"10\" y=\"32\" width=\"7\" height=\"6\" rx=\"1\"/><rect class=\"f0\" x=\"20.5\" y=\"32\" width=\"7\" height=\"6\" rx=\"1\"/>","equipe":"<circle class=\"f2\" cx=\"11\" cy=\"19\" r=\"5\"/><circle class=\"f2\" cx=\"37\" cy=\"19\" r=\"5\"/><path class=\"f2\" d=\"M2.5 39C2.5 31.5 6.5 27 11 27S19.5 31.5 19.5 39Z\"/><path class=\"f2\" d=\"M28.5 39C28.5 31.5 32.5 27 37 27S45.5 31.5 45.5 39Z\"/><circle class=\"f1\" cx=\"24\" cy=\"15\" r=\"7\"/><path class=\"f1\" d=\"M12 42C12 31.5 17.5 25.5 24 25.5S36 31.5 36 42Z\"/>","vehicules":"<path class=\"f1\" d=\"M4 33V16a3 3 0 0 1 3-3h23.5a2.5 2.5 0 0 1 2.2 1.3L36.5 22l5 1.6A3.5 3.5 0 0 1 44 27v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z\"/><path class=\"f2\" d=\"M27.5 16.5V23h7l-3-5.6a1.6 1.6 0 0 0-1.4-.9Z\"/><rect class=\"f2\" x=\"8\" y=\"22\" width=\"15\" height=\"4\" rx=\"2\"/><circle class=\"f1 s0\" cx=\"13\" cy=\"36\" r=\"5.5\" stroke-width=\"1.6\"/><circle class=\"f2\" cx=\"13\" cy=\"36\" r=\"2.2\"/><circle class=\"f1 s0\" cx=\"35\" cy=\"36\" r=\"5.5\" stroke-width=\"1.6\"/><circle class=\"f2\" cx=\"35\" cy=\"36\" r=\"2.2\"/>","materiel":"<g transform=\"rotate(45 24 24)\"><rect class=\"f1\" x=\"17\" y=\"22.4\" width=\"23\" height=\"3.2\" rx=\"1.2\"/><path class=\"f1\" d=\"M39 22.6h3.5v2.8H39Z\"/><rect class=\"f2\" x=\"3\" y=\"18.5\" width=\"16\" height=\"11\" rx=\"4.5\"/></g><g transform=\"rotate(-45 24 24)\"><rect class=\"f1\" x=\"5\" y=\"20.5\" width=\"27\" height=\"7\" rx=\"3.5\"/><path class=\"s1\" d=\"M41.6 19.6A6.5 6.5 0 1 0 41.6 28.4\" fill=\"none\" stroke-width=\"5.5\" stroke-linecap=\"round\"/></g>","matin":"<path class=\"f2\" d=\"M11 34A13 13 0 0 1 37 34Z\"/><path class=\"s0\" d=\"M19 30.5l5-5 5 5\" fill=\"none\" stroke-width=\"3.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><line class=\"s1\" x1=\"24\" y1=\"17\" x2=\"24\" y2=\"11.5\" stroke-width=\"3.6\" stroke-linecap=\"round\"/><line class=\"s1\" x1=\"12.7\" y1=\"22.7\" x2=\"9\" y2=\"19\" stroke-width=\"3.6\" stroke-linecap=\"round\"/><line class=\"s1\" x1=\"35.3\" y1=\"22.7\" x2=\"39\" y2=\"19\" stroke-width=\"3.6\" stroke-linecap=\"round\"/><line class=\"s1\" x1=\"4\" y1=\"38.5\" x2=\"44\" y2=\"38.5\" stroke-width=\"4\" stroke-linecap=\"round\"/>","apres-midi":"<path class=\"f2\" d=\"M11 34A13 13 0 0 1 37 34Z\"/><path class=\"s0\" d=\"M19 26l5 5 5-5\" fill=\"none\" stroke-width=\"3.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><line class=\"s1\" x1=\"24\" y1=\"17\" x2=\"24\" y2=\"11.5\" stroke-width=\"3.6\" stroke-linecap=\"round\"/><line class=\"s1\" x1=\"12.7\" y1=\"22.7\" x2=\"9\" y2=\"19\" stroke-width=\"3.6\" stroke-linecap=\"round\"/><line class=\"s1\" x1=\"35.3\" y1=\"22.7\" x2=\"39\" y2=\"19\" stroke-width=\"3.6\" stroke-linecap=\"round\"/><line class=\"s1\" x1=\"4\" y1=\"38.5\" x2=\"44\" y2=\"38.5\" stroke-width=\"4\" stroke-linecap=\"round\"/>","planning":"<rect class=\"f1\" x=\"4\" y=\"7\" width=\"40\" height=\"34\" rx=\"5\"/><path class=\"f2\" d=\"M4 12a5 5 0 0 1 5-5h30a5 5 0 0 1 5 5v4H4Z\"/><rect class=\"f0\" x=\"9\" y=\"20.5\" width=\"17\" height=\"4.5\" rx=\"2.25\"/><rect class=\"f2\" x=\"18\" y=\"27.5\" width=\"21\" height=\"4.5\" rx=\"2.25\"/><rect class=\"f0\" x=\"12\" y=\"34.5\" width=\"14\" height=\"4\" rx=\"2\"/>","compteurs":"<rect class=\"f1\" x=\"7\" y=\"23\" width=\"8\" height=\"17\" rx=\"2\"/><rect class=\"f2\" x=\"20\" y=\"10\" width=\"8\" height=\"30\" rx=\"2\"/><rect class=\"f1\" x=\"33\" y=\"17\" width=\"8\" height=\"23\" rx=\"2\"/><line class=\"s1\" x1=\"4\" y1=\"42.5\" x2=\"44\" y2=\"42.5\" stroke-width=\"3.6\" stroke-linecap=\"round\"/>","reglages":"<polygon class=\"f1 s1\" points=\"38.49,20.12 43.78,21.04 43.78,26.96 38.49,27.88 36.99,31.50 40.08,35.90 35.90,40.08 31.50,36.99 27.88,38.49 26.96,43.78 21.04,43.78 20.12,38.49 16.50,36.99 12.10,40.08 7.92,35.90 11.01,31.50 9.51,27.88 4.22,26.96 4.22,21.04 9.51,20.12 11.01,16.50 7.92,12.10 12.10,7.92 16.50,11.01 20.12,9.51 21.04,4.22 26.96,4.22 27.88,9.51 31.50,11.01 35.90,7.92 40.08,12.10 36.99,16.50\" stroke-width=\"2.5\" stroke-linejoin=\"round\"/><circle class=\"f2\" cx=\"24\" cy=\"24\" r=\"7\"/>","tampon":"<circle class=\"f1\" cx=\"24\" cy=\"10\" r=\"6\"/><rect class=\"f1\" x=\"21\" y=\"13\" width=\"6\" height=\"11\"/><rect class=\"f1\" x=\"9\" y=\"23\" width=\"30\" height=\"9\" rx=\"3\"/><rect class=\"f2\" x=\"11\" y=\"32\" width=\"26\" height=\"4\" rx=\"1\"/><rect class=\"f2\" x=\"6\" y=\"40\" width=\"36\" height=\"3.5\" rx=\"1.75\"/>"};
+const ICON_NAMES = {"maladie":"Maladie / arrêt","conges":"Congés (CP)","rtt":"RTT","bureau":"Bureau (B_)","terrain":"Terrain (T_)","teletravail":"Télétravail","reunion":"Réunion / RDV","nuit":"Nuit","ferie":"Jour férié","date":"Date","equipe":"Équipe","vehicules":"Véhicules","materiel":"Matériel","matin":"Matin","apres-midi":"Après-midi","planning":"Planning","compteurs":"Compteurs","reglages":"Réglages","tampon":"Tampon"};
+const CAT_ICON = {mal:"maladie", cong:"conges", b:"bureau", t:"terrain", tt:"teletravail", reu:"reunion", nuit:"nuit"};
+const ico = (k, s = 16, cls = "") => k && ICONS[k] ? `<svg class="ic${cls ? " " + cls : ""}" viewBox="0 0 48 48" width="${s}" height="${s}" aria-hidden="true" focusable="false">${ICONS[k]}</svg>` : "";
 
 // ---------- state ----------
 let settings = {people:[], vehicles:[], materiel:[], categories:DEFAULT_CATS, defaultCat:"b", extraHolidays:[]};
@@ -463,18 +512,34 @@ function holidayName(ds){
 // keyword matching
 let compiled = [];
 function compileCats(){
-  compiled = (settings.categories||[]).map(c => ({...c, nw:(c.words||[]).map(norm).filter(Boolean), dark: luminance(c.color||"#ffffff") < .32}));
+  compiled = (settings.categories||[]).map(c => ({...c, nw:(c.words||[]).map(norm).filter(Boolean), dark: luminance(c.color||"#ffffff") < .32,
+    iconKey: (c.icon !== undefined && c.icon !== null ? c.icon : CAT_ICON[c.id]) || null}));
 }
 function wordMatch(text, w){ const i = text.indexOf(w); if (i < 0) return false; const re = new RegExp("(^|[^a-z0-9])" + w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&") + "($|[^a-z0-9])"); return re.test(text); }
+function kwMatch(c, t){
+  for (const w of c.nw){ if (c.mode === "prefix" ? t.startsWith(w) : c.mode === "word" ? wordMatch(t,w) : t.includes(w)) return true; }
+  return false;
+}
+// catégorie suggérée par les mots-clés (sert de pré-sélection, et pour les cases saisies avant le choix manuel)
 function catFor(text){
   const t = norm(text); if (!t) return null;
-  for (const c of compiled){
-    for (const w of c.nw){
-      if (c.mode === "prefix" ? t.startsWith(w) : c.mode === "word" ? wordMatch(t,w) : t.includes(w)) return c;
-    }
-  }
+  for (const c of compiled) if (kwMatch(c, t)) return c;
   return compiled.find(c => c.id === settings.defaultCat) || null;
 }
+const catById = (id) => id ? compiled.find(c => c.id === id) || null : null;
+// catégorie d'une demi-case : celle enregistrée avec la case, sinon celle des mots-clés
+function catOf(v, half){
+  if (!v) return null;
+  const txt = half === "pm" ? v.pm : v.am; if (!txt) return null;
+  return catById(half === "pm" ? v.cpm : v.cam) || catFor(txt);
+}
+function iconKeyFor(text, c){
+  if (!c || !c.iconKey) return null;
+  if (c.iconKey === "conges" && startsCode(text, "rtt")) return "rtt";
+  if (c.id === settings.defaultCat && !kwMatch(c, norm(text))) return null;   // texte libre : pas d'icône
+  return c.iconKey;
+}
+const pillHtml = (t, c, s = 14) => `<span class="pill${c && c.dark ? " dk" : ""}"${c ? ` style="${catStyle(c)}"` : ""}>${ico(iconKeyFor(t, c), s)}<span>${esc(t)}</span></span>`;
 const catStyle = (c) => `--c:${esc(c.color)}${c.ink ? ";--ink:" + esc(c.ink) : ""}`;
 const catAttr = (c) => c ? ` cat${c.dark?" dk":""}" style="${catStyle(c)}` : "";
 const startsCode = (text, code) => norm(text).startsWith(code);
@@ -494,11 +559,12 @@ function countsFor(personId, year){
       const bar = key.lastIndexOf("|"); if (key.slice(0,bar) !== personId) continue;
       const ds = key.slice(bar+1), d = parseIso(ds), wd = d.getDay();
       if (wd === 0 || wd === 6 || holidayName(ds)) continue;
-      const halves = v.full ? [[v.am,1]] : [[v.am,.5],[v.pm,.5]];
-      for (const [txt, w] of halves){
+      const halves = v.full ? [["am",1]] : [["am",.5],["pm",.5]];
+      for (const [half, w] of halves){
+        const txt = v[half];
         if (!txt) continue;
         if (startsCode(txt,"cp")) cp += w; else if (startsCode(txt,"rtt")) rtt += w;
-        const c = catFor(txt); if (c && c.id === ttCat) tt += w; if (c && c.id === malCat) mal += w;
+        const c = catOf(v, half); if (c && c.id === ttCat) tt += w; if (c && c.id === malCat) mal += w;
       }
     }
   }
@@ -528,8 +594,8 @@ function renderTop(){
 
 function renderLegend(){
   $("legend").innerHTML = `<span class="lbl">Couleurs</span>` + compiled.map(c =>
-    `<span class="chip${catAttr(c)}">${esc(c.label)}${c.id===settings.defaultCat?" · par défaut":""}</span>`).join("") +
-    `<span class="chip hol">Jour férié</span>`;
+    `<span class="chip${catAttr(c)}">${ico(c.iconKey)}${esc(c.label)}${c.id===settings.defaultCat?" · par défaut":""}</span>`).join("") +
+    `<span class="chip hol">${ico("ferie")}Jour férié</span>`;
 }
 
 function renderFilters(){
@@ -548,12 +614,13 @@ function renderToday(){
   const out = [];
   for (const p of (settings.people||[]).filter(p=>!p.hidden)){
     const v = getCell(p.id, ds); if (!v) continue;
-    const parts = v.full ? [["", v.am]] : [["matin ", v.am],["après-midi ", v.pm]];
-    for (const [when, txt] of parts){
+    const parts = v.full ? [["", "am"]] : [["matin ", "am"],["après-midi ", "pm"]];
+    for (const [when, half] of parts){
+      const txt = v[half];
       if (!txt) continue;
-      const c = catFor(txt);
+      const c = catOf(v, half);
       if (!c || !["mal","cong","tt","nuit"].includes(c.id)) continue;
-      out.push(`<span class="chip${catAttr(c)}"><b>${esc(p.name)}</b> ${esc(when)}${esc(txt)}</span>`);
+      out.push(`<span class="chip${catAttr(c)}">${ico(iconKeyFor(txt, c))}<b>${esc(p.name)}</b> ${esc(when)}${esc(txt)}</span>`);
     }
   }
   $("todayList").innerHTML = out.length ? out.join("") : `<span class="empty-note">Tout le monde est présent (aucune absence ni télétravail saisi).</span>`;
@@ -569,14 +636,14 @@ function renderGrid(){
     return;
   }
   const ro = canWrite ? "" : " ro";
-  const pillOf = (t) => t ? `<span class="pill">${esc(t)}</span>` : "";
+  const pillOf = (t, c, res) => t ? `<span class="pill">${ico(res && c && c.id === settings.defaultCat ? null : iconKeyFor(t, c), 14)}<span>${esc(t)}</span></span>` : "";
   const cy = (() => { const w = windowDays(); return w[Math.floor(w.length/2)].getFullYear(); })();
   const tdA = (base, c) => `class="${base}${c ? " cat" + (c.dark ? " dk" : "") : ""}${ro}"${c ? ` style="${catStyle(c)}"` : ""}`;
   let h = (isMobile() ? `<div class="mv" style="min-height:0;padding-block:10px 6px">${mSeg()}</div>` : "") + `<table class="grid"><thead>`;
-  h += `<tr class="band"><th class="corner" rowspan="4">Date</th>`;
-  if (people.length) h += `<th colspan="${people.length*2}">ÉQUIPE</th>`;
-  if (veh.length) h += `<th class="gap" rowspan="4"></th><th colspan="${veh.length}">VÉHICULES</th>`;
-  if (mat.length) h += `<th class="gap" rowspan="4"></th><th colspan="${mat.length}">MATÉRIEL</th>`;
+  h += `<tr class="band"><th class="corner" rowspan="4"><span class="thi">${ico("date",15)}Date</span></th>`;
+  if (people.length) h += `<th colspan="${people.length*2}"><span class="thi">${ico("equipe",15)}ÉQUIPE</span></th>`;
+  if (veh.length) h += `<th class="gap" rowspan="4"></th><th colspan="${veh.length}"><span class="thi">${ico("vehicules",15)}VÉHICULES</span></th>`;
+  if (mat.length) h += `<th class="gap" rowspan="4"></th><th colspan="${mat.length}"><span class="thi">${ico("materiel",15)}MATÉRIEL</span></th>`;
   h += `</tr><tr class="names">`;
   for (const p of people) h += `<th colspan="2">${esc(p.name)}</th>`;
   for (const r of [...veh, ...mat]) h += `<th class="res" rowspan="3">${esc(r.name)}</th>`;
@@ -588,7 +655,7 @@ function renderGrid(){
     h += `<th colspan="2" title="Décompte ${cy} : pris / droit">CP <span class="v${p.cp && c.cp>p.cp?" over":""}">${cpTxt}</span> · RTT <span class="v${p.rtt && c.rtt>p.rtt?" over":""}">${rtTxt}</span></th>`;
   }
   h += `</tr><tr class="half">`;
-  for (const p of people) h += `<th>Matin</th><th>Après-midi</th>`;
+  for (const p of people) h += `<th><span class="thi">${ico("matin",14)}Matin</span></th><th><span class="thi">${ico("apres-midi",14)}Après-midi</span></th>`;
   h += `</tr></thead><tbody>`;
   const todayIso = iso(now);
   const wdays = windowDays();
@@ -601,14 +668,15 @@ function renderGrid(){
     for (const p of people){
       const v = getCell(p.id, ds);
       if (v && v.full){
-        h += `<td colspan="2" ${tdA("p-am full", catFor(v.am))} data-r="${esc(p.id)}" data-d="${ds}" tabindex="0">${pillOf(v.am)}</td>`;
+        const c = catOf(v, "am");
+        h += `<td colspan="2" ${tdA("p-am full", c)} data-r="${esc(p.id)}" data-d="${ds}" tabindex="0">${pillOf(v.am, c)}</td>`;
       } else {
-        const am = v?.am || "", pm = v?.pm || "";
-        h += `<td ${tdA("p-am", catFor(am))} data-r="${esc(p.id)}" data-d="${ds}" data-s="am" tabindex="0">${pillOf(am)}</td>`;
-        h += `<td ${tdA("", catFor(pm))} data-r="${esc(p.id)}" data-d="${ds}" data-s="pm" tabindex="0">${pillOf(pm)}</td>`;
+        const am = v?.am || "", pm = v?.pm || "", ca = catOf(v, "am"), cpm = catOf(v, "pm");
+        h += `<td ${tdA("p-am", ca)} data-r="${esc(p.id)}" data-d="${ds}" data-s="am" tabindex="0">${pillOf(am, ca)}</td>`;
+        h += `<td ${tdA("", cpm)} data-r="${esc(p.id)}" data-d="${ds}" data-s="pm" tabindex="0">${pillOf(pm, cpm)}</td>`;
       }
     }
-    const resCells = (list) => list.map(r => { const v = getCell(r.id, ds); const t = v?.am || ""; return `<td ${tdA("res", t?catFor(t):null)} data-r="${esc(r.id)}" data-d="${ds}" data-res="1" tabindex="0">${pillOf(t)}</td>`; }).join("");
+    const resCells = (list) => list.map(r => { const v = getCell(r.id, ds); const t = v?.am || ""; const c = catOf(v, "am"); return `<td ${tdA("res", c)} data-r="${esc(r.id)}" data-d="${ds}" data-res="1" tabindex="0">${pillOf(t, c, true)}</td>`; }).join("");
     if (veh.length) h += `<td class="gap"></td>` + resCells(veh);
     if (mat.length) h += `<td class="gap"></td>` + resCells(mat);
     h += `</tr>`;
@@ -619,12 +687,14 @@ function renderGrid(){
   if (pendingToday && settingsLoaded){ const t = wrap.querySelector("tr.today"); if (t){ wrap.scrollTop = Math.max(0, t.offsetTop - 220); } pendingToday = false; }
 }
 
-function mHalf(rowId, ds, slot, text, label, extra){
-  const c = text ? catFor(text) : null;
+function mHalf(rowId, ds, slot, v, label, extra){
+  const half = slot === "pm" ? "pm" : "am";
+  const text = (v && v[half]) || "";
+  const c = catOf(v, half);
   const cls = `mhalf${slot==="full"?" full":""}${c ? " cat" + (c.dark?" dk":"") : ""}${canWrite?"":" ro"}${extra||""}`;
   const st = c ? ` style="${catStyle(c)}"` : "";
   const ds2 = slot === "full" ? "" : ` data-s="${slot}"`;
-  return `<button type="button" class="${cls}"${st} data-r="${esc(rowId)}" data-d="${ds}"${ds2}>${label ? `<small>${label}</small>` : ""}${text ? `<span>${esc(text)}</span>` : `<span class="ph">${canWrite ? "+ Ajouter" : "—"}</span>`}</button>`;
+  return `<button type="button" class="${cls}"${st} data-r="${esc(rowId)}" data-d="${ds}"${ds2}>${label ? `<small>${label}</small>` : ""}${text ? `<span class="tx">${ico(iconKeyFor(text, c), 16)}<span>${esc(text)}</span></span>` : `<span class="ph">${canWrite ? "+ Ajouter" : "—"}</span>`}</button>`;
 }
 function mSeg(){
   return `<div class="mseg" role="group" aria-label="Affichage">${[["day","Par jour"],["person","Par personne"],["grid","Tableau"]].map(([k,l]) => `<button type="button" data-mview="${k}" aria-pressed="${mview===k}">${l}</button>`).join("")}</div>`;
@@ -646,13 +716,13 @@ function renderMobile(){
     for (const p of visiblePeople()){
       const v = getCell(p.id, selDay), c = countsFor(p.id, sd.getFullYear());
       h += `<div class="pcard"><div class="pname"><span>${esc(p.name)}</span><span class="pc">CP ${fmtDays(c.cp)}${p.cp?" / "+fmtDays(p.cp):""} · RTT ${fmtDays(c.rtt)}${p.rtt?" / "+fmtDays(p.rtt):""}</span></div><div class="halves">`;
-      h += v && v.full ? mHalf(p.id, selDay, "full", v.am, "Journée") : mHalf(p.id, selDay, "am", v?.am || "", "Matin") + mHalf(p.id, selDay, "pm", v?.pm || "", "Après-midi");
+      h += v && v.full ? mHalf(p.id, selDay, "full", v, "Journée") : mHalf(p.id, selDay, "am", v, "Matin") + mHalf(p.id, selDay, "pm", v, "Après-midi");
       h += `</div></div>`;
     }
     if (!hiddenRows.has("__res")){
-      for (const [title, list] of [["Véhicules", settings.vehicles||[]], ["Matériel", settings.materiel||[]]]){
+      for (const [title, list, ik] of [["Véhicules", settings.vehicles||[], "vehicules"], ["Matériel", settings.materiel||[], "materiel"]]){
         if (!list.length) continue;
-        h += `<div class="rcard"><h3>${title}</h3>` + list.map(r => { const t = getCell(r.id, selDay)?.am || ""; const c = t ? catFor(t) : null;
+        h += `<div class="rcard"><h3>${ico(ik)}${title}</h3>` + list.map(r => { const rv = getCell(r.id, selDay); const t = rv?.am || ""; const c = catOf(rv, "am");
           return `<button type="button" class="rrow${c?" cat":""}"${c?` style="${catStyle(c)}"`:""} data-r="${esc(r.id)}" data-d="${selDay}" data-res="1"><span>${esc(r.name)}</span><span class="rv">${t ? esc(t) : "libre"}</span></button>`; }).join("") + `</div>`;
       }
     }
@@ -668,7 +738,7 @@ function renderMobile(){
       const dt = new Date(cur.y, cur.m, d), ds = iso(dt), wd = dt.getDay(), we = wd===0||wd===6, hn = holidayName(ds);
       const v = getCell(p.id, ds);
       h += `<div class="prow${we?" we":""}${hn?" hol":""}${ds===iso(now)?" today":""}"><div class="pd"><b>${d}</b>${DAYS[wd]}${hn?`<span>${esc(hn)}</span>`:""}</div>`;
-      h += v && v.full ? mHalf(p.id, ds, "full", v.am, "") : mHalf(p.id, ds, "am", v?.am || "", we ? "" : "Matin") + mHalf(p.id, ds, "pm", v?.pm || "", we ? "" : "Après-midi");
+      h += v && v.full ? mHalf(p.id, ds, "full", v, "") : mHalf(p.id, ds, "am", v, we ? "" : "Matin") + mHalf(p.id, ds, "pm", v, we ? "" : "Après-midi");
       h += `</div>`;
     }
   }
@@ -686,16 +756,16 @@ function renderCounters(){
       <td>${fmtDays(c.tt)}</td><td>${fmtDays(c.mal)}</td></tr>`;
   }).join("");
   $("cntPage").innerHTML = `
-    <div class="card"><h3>Compteurs ${cur.y}</h3>
+    <div class="card"><h3>${ico("compteurs",20)}Compteurs ${cur.y}</h3>
       <p class="desc">Calculés à partir du planning de l'année ${cur.y}. Les droits annuels se saisissent dans Réglages › Équipe. Change d'année avec les flèches en haut.</p>
-      <div class="tablewrap"><table class="cnt"><thead><tr><th>Personne</th><th>Droit CP</th><th>CP pris</th><th>Reste CP</th><th>Droit RTT</th><th>RTT pris</th><th>Reste RTT</th><th>Télétravail</th><th>Maladie</th></tr></thead>
+      <div class="tablewrap"><table class="cnt"><thead><tr><th>Personne</th><th>Droit CP</th><th><span class="thi">${ico("conges",14)}CP pris</span></th><th>Reste CP</th><th>Droit RTT</th><th><span class="thi">${ico("rtt",14)}RTT pris</span></th><th>Reste RTT</th><th><span class="thi">${ico("teletravail",14)}Télétravail</span></th><th><span class="thi">${ico("maladie",14)}Maladie</span></th></tr></thead>
       <tbody>${rows || `<tr><td colspan="9" class="empty-note">Aucune personne dans l'équipe.</td></tr>`}</tbody></table></div>
     </div>
     <div class="card"><h3>Comment le décompte fonctionne</h3><ul class="rules">
       <li>Une saisie qui <b>commence par CP</b> ou <b>par RTT</b> est décomptée (« CP », « CP 12 », « RTT imposée »).</li>
       <li><b>Journée entière</b> = 1 jour. Une case Matin ou Après-midi = 0,5 jour.</li>
       <li>Les week-ends et jours fériés ne sont jamais décomptés.</li>
-      <li>Télétravail et maladie sont comptés d'après leurs mots-clés (en jours).</li>
+      <li>Télétravail et maladie sont comptés d'après la catégorie de la case (en jours) : celle choisie à la saisie, ou à défaut celle reconnue par les mots-clés.</li>
     </ul></div>`;
 }
 
@@ -708,7 +778,9 @@ function catCard(c, i, n){
           <option value="contains"${c.mode==="contains"?" selected":""}>contient</option>
           <option value="prefix"${c.mode==="prefix"?" selected":""}>commence par</option>
           <option value="word"${c.mode==="word"?" selected":""}>mot entier</option>
-        </select></div>
+        </select>
+        <span class="icprev" aria-hidden="true">${ico((c.icon !== undefined && c.icon !== null ? c.icon : CAT_ICON[c.id]) || "", 20)}</span>
+        <select data-f="icon" aria-label="Icône de la catégorie">${["", ...Object.keys(ICONS).filter(k => k !== "tampon")].map(k => `<option value="${k}"${((c.icon !== undefined && c.icon !== null ? c.icon : CAT_ICON[c.id]) || "") === k ? " selected" : ""}>${k ? esc(ICON_NAMES[k]) : "Sans icône"}</option>`).join("")}</select></div>
       <textarea data-f="words" aria-label="Mots-clés">${esc((c.words||[]).join(", "))}</textarea>
       <label class="def"><input type="radio" name="defcat" value="${esc(c.id)}"${settings.defaultCat===c.id?" checked":""}> Couleur du texte libre (aucun mot-clé reconnu)</label>
     </div>
@@ -718,8 +790,8 @@ function catCard(c, i, n){
       <button class="icon" data-act="del" aria-label="Supprimer la catégorie">✕</button>
     </div></div>`;
 }
-function listCard(title, desc, key, items, withRights){
-  return `<div class="card" data-list="${key}"><h3>${title}</h3><p class="desc">${desc}</p><div class="list">
+function listCard(title, desc, key, items, withRights, iconK){
+  return `<div class="card" data-list="${key}"><h3>${ico(iconK, 20)}${title}</h3><p class="desc">${desc}</p><div class="list">
     ${items.map((it,i) => `<div class="li" data-id="${esc(it.id)}">
       <input type="text" value="${esc(it.name)}" data-f="name" aria-label="Nom">
       ${withRights ? `<span class="mini">CP</span><input type="number" min="0" step="0.5" value="${it.cp ?? ""}" data-f="cp" aria-label="Droit CP"><span class="mini">RTT</span><input type="number" min="0" step="0.5" value="${it.rtt ?? ""}" data-f="rtt" aria-label="Droit RTT">
@@ -735,19 +807,19 @@ function renderSettings(){
   const cats = settings.categories||[];
   $("setPage").innerHTML = `
     ${canWrite ? "" : `<div class="banner">Tu as accès en lecture seule : les réglages ne peuvent pas être modifiés.</div>`}
-    <div class="card"><h3>Couleurs et mots-clés</h3>
-      <p class="desc">Clique sur le carré pour choisir la couleur. Les mots-clés sont séparés par des virgules, sans tenir compte des majuscules ni des accents. La première catégorie reconnue gagne : monte ou descends une catégorie pour changer la priorité. Le texte libre prend la couleur cochée.</p>
+    <div class="card"><h3>${ico("reglages",20)}Catégories : couleurs, icônes et mots-clés</h3>
+      <p class="desc">À la saisie, la catégorie est pré-sélectionnée d'après ces mots-clés ; on peut toujours en choisir une autre d'un clic, et ce choix est enregistré avec la case. Les mots-clés sont séparés par des virgules, sans tenir compte des majuscules ni des accents. La première catégorie reconnue gagne : monte ou descends une catégorie pour changer la priorité. Le texte libre prend la catégorie cochée.</p>
       <div class="cats">${cats.map((c,i)=>catCard(c,i,cats.length)).join("")}</div>
       <div class="row" style="margin-top:10px"><button class="btn sm" id="addCat">Ajouter une catégorie</button><button class="btn sm" id="resetCats">Rétablir les couleurs d'origine</button></div>
     </div>
     <div class="two">
-      ${listCard("Équipe","Droits annuels CP / RTT en jours. Pour un départ, masque la personne : son historique et ses compteurs sont gardés.","people",settings.people||[],true)}
+      ${listCard("Équipe","Droits annuels CP / RTT en jours. Pour un départ, masque la personne : son historique et ses compteurs sont gardés.","people",settings.people||[],true,"equipe")}
       <div style="display:flex;flex-direction:column;gap:18px">
-        ${listCard("Véhicules","Une colonne par véhicule, pour noter qui le réserve.","vehicles",settings.vehicles||[],false)}
-        ${listCard("Matériel","Une colonne par matériel.","materiel",settings.materiel||[],false)}
+        ${listCard("Véhicules","Une colonne par véhicule, pour noter qui le réserve.","vehicles",settings.vehicles||[],false,"vehicules")}
+        ${listCard("Matériel","Une colonne par matériel.","materiel",settings.materiel||[],false,"materiel")}
       </div>
     </div>
-    <div class="card" data-list="extraHolidays"><h3>Ponts et fermetures</h3>
+    <div class="card" data-list="extraHolidays"><h3>${ico("ferie",20)}Ponts et fermetures</h3>
       <p class="desc">Les jours fériés français sont calculés automatiquement chaque année. Ajoute ici un pont ou une fermeture : le jour se grise et n'est pas décompté.</p>
       <div class="list">${(settings.extraHolidays||[]).slice().sort((a,b)=>a.date.localeCompare(b.date)).map(hd => `<div class="li" data-date="${esc(hd.date)}"><span style="min-width:7em;font-variant-numeric:tabular-nums">${esc(hd.date.split("-").reverse().join("/"))}</span><span style="flex:1">${esc(hd.label)}</span><button class="icon" data-act="delhol" aria-label="Supprimer">✕</button></div>`).join("") || `<p class="empty-note">Aucun pont ajouté.</p>`}</div>
       <div class="row" style="margin-top:10px"><input type="date" id="holDate" style="border:1px solid var(--line-strong);border-radius:6px;padding:6px 8px;background:var(--surface)"><input type="text" id="holLabel" placeholder="Pont de l'Ascension" style="flex:1 1 160px;min-width:0;border:1px solid var(--line-strong);border-radius:6px;padding:7px 9px;background:var(--surface)"><button class="btn sm primary" id="addHol">Ajouter</button></div>
@@ -793,7 +865,7 @@ function setLocal(k, v){
 function applyRow(r){          // une ligne de la table "cases"
   const k = keyOf(r.ligne, r.jour), prev = cellMeta.get(k);
   if (prev && prev.version > r.version) return;   // message arrivé dans le désordre : on garde le plus récent
-  setLocal(k, {am: r.matin || "", pm: r.apres_midi || "", full: !!r.journee});
+  setLocal(k, {am: r.matin || "", pm: r.apres_midi || "", full: !!r.journee, cam: r.cat_matin || null, cpm: r.cat_apres_midi || null});
   cellMeta.set(k, {version: r.version, par: r.maj_par});
 }
 function removeRow(ligne, jour){ const k = keyOf(ligne, jour); setLocal(k, null); cellMeta.delete(k); }
@@ -837,7 +909,7 @@ let noteTimer = null;
 function notify(t){ const b = $("banner"); b.textContent = t; b.hidden = false; clearTimeout(noteTimer); noteTimer = setTimeout(() => { b.hidden = true; }, 12000); }
 const quiEst = (email) => email ? email.split("@")[0].replace(/[._-]+/g, " ").replace(/\b\w/g, c => c.toUpperCase()) : "un collègue";
 
-const COLS = "ligne,jour,matin,apres_midi,journee,version,maj_par";
+const COLS = "ligne,jour,matin,apres_midi,journee,cat_matin,cat_apres_midi,version,maj_par";
 async function loadYear(y){
   if (!sb || loadedYears.has(y)) return;
   loadedYears.add(y);
@@ -970,12 +1042,24 @@ function openEditor(rowId, ds, isRes){
   if (v && v.full === false && !$("edAm").value && !$("edPm").value) ed.mode = "half";
   $("edUntil").value = ""; $("edUntil").min = ds;
   ed.personName = who ? who.name : "";
+  // catégorie par champ : {id, manual}. Une catégorie enregistrée différente de la détection compte comme choisie à la main.
+  const initCat = (half) => {
+    const txt = v ? (half === "pm" ? v.pm : v.am) : "";
+    const auto = txt ? catFor(txt)?.id || null : null;
+    const saved = catById(v ? (half === "pm" ? v.cpm : v.cam) : null);
+    return saved ? {id: saved.id, manual: saved.id !== auto} : {id: auto, manual: false};
+  };
+  const none = () => ({id: null, manual: false});
+  ed.cats = v && v.full ? {edFull: initCat("am"), edAm: none(), edPm: none()}
+          : v ? {edFull: none(), edAm: initCat("am"), edPm: initCat("pm")}
+          : {edFull: none(), edAm: none(), edPm: none()};
+  $("edStamp").hidden = false;
   ed.veh = new Set(); ed.vehBefore = new Set();
   if (!isRes) for (const vv of bookable()){ const c = getCell(vv.id, ds); if (c?.am && norm(c.am) === norm(ed.personName)){ ed.veh.add(vv.id); ed.vehBefore.add(vv.id); } }
   $("edMode").hidden = !!isRes;
   $("fFull").querySelector("label").textContent = isRes ? "Réservation (qui / pour quoi)" : "Journée";
   setMode(ed.mode);
-  $("edQuick").innerHTML = (isRes ? [] : QUICK).map(q => { const c = catFor(q); return `<button type="button" class="chip${catAttr(c)}" data-q="${esc(q)}">${esc(q)}</button>`; }).join("") || `<span class="empty-note">Exemple : initiales du conducteur, chantier…</span>`;
+  $("edQuick").innerHTML = (isRes ? [] : QUICK).map(q => { const c = catFor(q); return `<button type="button" class="chip${catAttr(c)}" data-q="${esc(q)}">${ico(iconKeyFor(q, c), 14)}${esc(q)}</button>`; }).join("") || `<span class="empty-note">Exemple : initiales du conducteur, chantier…</span>`;
   $("scrim").hidden = false; $("drawer").hidden = false;
   setTimeout(() => (ed.mode === "full" ? $("edFull") : $("edAm")).focus(), 30);
   updatePreviews();
@@ -985,19 +1069,36 @@ function setMode(mode){
   ed.mode = mode;
   $("edMode").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === mode)));
   $("fFull").hidden = mode !== "full"; $("fAm").hidden = mode !== "half"; $("fPm").hidden = mode !== "half";
-  if (mode === "full" && !$("edFull").value) $("edFull").value = $("edAm").value || $("edPm").value;
-  if (mode === "half" && !$("edAm").value && !$("edPm").value && $("edFull").value){ $("edAm").value = $("edFull").value; $("edPm").value = $("edFull").value; }
+  if (mode === "full" && !$("edFull").value){ const src = $("edAm").value ? "edAm" : "edPm"; $("edFull").value = $(src).value; ed.cats.edFull = {...ed.cats[src]}; }
+  if (mode === "half" && !$("edAm").value && !$("edPm").value && $("edFull").value){ $("edAm").value = $("edFull").value; $("edPm").value = $("edFull").value; ed.cats.edAm = {...ed.cats.edFull}; ed.cats.edPm = {...ed.cats.edFull}; }
   lastField = mode === "full" ? "edFull" : "edAm";
   updatePreviews();
 }
-function pv(id, el){ const t = $(id).value; const c = t.trim() ? catFor(t) : null; $(el).innerHTML = c ? `<span class="chip${catAttr(c)}">${esc(c.label)}</span>${startsCode(t,"cp")||startsCode(t,"rtt") ? " décompté" : ""}` : ""; }
-function updatePreviews(){ pv("edFull","pvFull"); pv("edAm","pvAm"); pv("edPm","pvPm"); renderVeh(); }
+const PICK = {edFull:["cpFull","pvFull"], edAm:["cpAm","pvAm"], edPm:["cpPm","pvPm"]};
+function syncAuto(field){
+  const st = ed.cats[field], t = $(field).value.trim();
+  const auto = t ? catFor(t)?.id || null : null;
+  if (!st.manual) st.id = auto;
+  else if (st.id === auto) st.manual = false;
+  return auto;
+}
+function renderPick(field){
+  const st = ed.cats[field], t = $(field).value.trim(), auto = syncAuto(field);
+  const [pk, nt] = PICK[field];
+  $(pk).innerHTML = compiled.map(c => `<button type="button" class="${c.dark ? "dk" : ""}" style="${catStyle(c)}" data-pick="${esc(c.id)}" data-field="${field}" aria-pressed="${st.id === c.id}">${ico(c.iconKey, 14)}${esc(c.label)}</button>`).join("");
+  let note = "";
+  if (st.manual && st.id) note = t ? `Catégorie choisie à la main${auto ? ` <button type="button" data-auto="${field}">revenir à « ${esc(catById(auto)?.label || "")} »</button>` : ""}` : "Catégorie choisie : tape le texte";
+  else if (t && st.id) note = "Reconnue d'après le texte · un clic sur une autre pastille pour corriger";
+  if (t && (startsCode(t,"cp") || startsCode(t,"rtt"))) note += (note ? " · " : "") + `décompté en ${startsCode(t,"cp") ? "CP" : "RTT"}`;
+  $(nt).innerHTML = note;
+}
+function updatePreviews(){ if (!ed) return; renderPick("edFull"); renderPick("edAm"); renderPick("edPm"); renderVeh(); }
 const VEH_CATS = ["t","reu"];
 const bookable = () => (settings.vehicles||[]).filter(v => !/manquant/i.test(v.name));
 function needsVehicle(){
   if (!ed || ed.isRes) return null;
-  const texts = ed.mode === "full" ? [$("edFull").value] : [$("edAm").value, $("edPm").value];
-  for (const t of texts){ const c = t.trim() ? catFor(t) : null; if (c && VEH_CATS.includes(c.id)) return c; }
+  const fields = ed.mode === "full" ? ["edFull"] : ["edAm","edPm"];
+  for (const f of fields){ const c = $(f).value.trim() ? catById(ed.cats[f].id) : null; if (c && VEH_CATS.includes(c.id)) return c; }
   return null;
 }
 function renderVeh(){
@@ -1016,11 +1117,14 @@ function renderVeh(){
   if (box.hidden){ box.hidden = false; }
 }
 function closeEditor(){ $("scrim").hidden = true; $("drawer").hidden = true; ed = null; }
+// la catégorie est toujours écrite (null si aucune) pour remplacer celle d'une saisie précédente
 function editorValue(){
-  if (ed.mode === "full"){ const t = $("edFull").value.trim(); return t ? {am:t, pm:"", full:true} : null; }
+  if (ed.mode === "full"){ const t = $("edFull").value.trim(); return t ? {am:t, pm:"", full:true, cam: ed.cats.edFull.id || null, cpm: null} : null; }
   const am = $("edAm").value.trim(), pm = $("edPm").value.trim();
-  return (am || pm) ? {am, pm, full:false} : null;
+  return (am || pm) ? {am, pm, full:false, cam: am ? ed.cats.edAm.id || null : null, cpm: pm ? ed.cats.edPm.id || null : null} : null;
 }
+const normCell = (v) => v ? {am: v.am || "", pm: v.full ? "" : v.pm || "", full: !!v.full, cam: v.am ? v.cam || null : null, cpm: !v.full && v.pm ? v.cpm || null : null} : null;
+const sameCell = (a, b) => JSON.stringify(normCell(a)) === JSON.stringify(normCell(b));
 function saveEditor(clear){
   const val = clear ? null : editorValue();
   // la case ouverte : enregistrée seulement si personne ne l'a changée depuis l'ouverture
@@ -1053,7 +1157,7 @@ function saveEditor(clear){
   }
   const rowName = (id) => ([...(settings.people||[]), ...(settings.vehicles||[]), ...(settings.materiel||[])].find(x => x.id === id) || {}).name || id;
   closeEditor();
-  writeCells(ops).then((conflits) => {
+  commit(ops).then((conflits) => {
     if (!conflits) return;
     const mod = conflits.filter(c => c.raison === "modifiee"), pris = conflits.filter(c => c.raison === "deja_pris");
     const msgs = [];
@@ -1064,6 +1168,96 @@ function saveEditor(clear){
     const n = pris.length + skipped;
     if (n) msgs.push(`${n} jour${n>1?"s":""} non réservé${n>1?"s":""} : véhicule déjà pris${pris[0] ? " par " + pris[0].qui : ""}.`);
     if (msgs.length) notify(msgs.join(" "));
+  });
+}
+const rowNameOf = (id) => ([...(settings.people||[]), ...(settings.vehicles||[]), ...(settings.materiel||[])].find(x => x.id === id) || {}).name || id;
+const metaVer = (k) => cellMeta.get(k)?.version || 0;
+const dayLabel = (ds) => { const d = parseIso(ds); return `${DAYS[d.getDay()]} ${pad(d.getDate())}/${pad(d.getMonth()+1)}`; };
+
+// ---------- annulation (Ctrl+Z) ----------
+// chaque enregistrement garde la valeur d'avant ; l'annulation la remet, sauf si un collègue a modifié la case entre-temps
+const undoStack = [];
+let lastWrite = Promise.resolve();
+function commit(ops){
+  const entry = {};
+  for (const o of ops){ const k = keyOf(o.ligne, o.jour); if (k in entry) continue; const v = getCell(o.ligne, o.jour); entry[k] = v ? JSON.parse(JSON.stringify(v)) : null; }
+  undoStack.push(entry); if (undoStack.length > 50) undoStack.shift();
+  renderStampBar();
+  const drop = () => { const i = undoStack.indexOf(entry); if (i >= 0) undoStack.splice(i, 1); };
+  const p = writeCells(ops).then((conflits) => {
+    if (!conflits) drop();                                  // erreur : rien à annuler
+    else { for (const c of conflits) delete entry[keyOf(c.ligne, c.jour)]; if (!Object.keys(entry).length) drop(); }
+    renderStampBar();
+    return conflits;
+  });
+  lastWrite = p.catch(() => {});
+  return p;
+}
+function undo(){
+  if (!canWrite) return;
+  const entry = undoStack.pop();
+  if (!entry){ setStatus("Rien à annuler"); return; }
+  renderStampBar();
+  lastWrite.then(() => {
+    const ops = Object.entries(entry).map(([k, v]) => { const bar = k.lastIndexOf("|");
+      return {ligne: k.slice(0, bar), jour: k.slice(bar + 1), mode: "ecrire", valeur: v ? {cam: null, cpm: null, ...v} : null, version: metaVer(k)}; });
+    lastWrite = writeCells(ops).then((conflits) => {
+      if (!conflits) return;
+      if (conflits.length){ const c = conflits[0]; notify(`Annulation partielle : la case de ${rowNameOf(c.ligne)} (${dayLabel(c.jour)}) a été modifiée entre-temps par ${quiEst(c.par)}, elle n'a pas été remise.`); }
+      else setStatus("Dernière modification annulée");
+    }).catch(() => {});
+  });
+}
+
+// ---------- tampon : copier une saisie puis cliquer sur les cases à remplir ----------
+let stamp = null;   // {shape:"day"|"half"|"pair", am, pm, cam, cpm}
+function stampFromValue(val, isRes){
+  if (isRes || val.full) return {shape:"day", am:val.am, cam:val.cam || null};
+  if (val.am && val.pm) return {shape:"pair", am:val.am, pm:val.pm, cam:val.cam || null, cpm:val.cpm || null};
+  return {shape:"half", am: val.am || val.pm, cam: (val.am ? val.cam : val.cpm) || null};
+}
+function startStamp(s){ stamp = s; document.body.classList.add("stamping"); renderStampBar(); }
+function endStamp(){ if (!stamp) return; stamp = null; document.body.classList.remove("stamping"); renderStampBar(); setStatus("Tampon terminé"); }
+function renderStampBar(){
+  const bar = $("stampBar");
+  if (!stamp){ bar.hidden = true; bar.innerHTML = ""; return; }
+  const c1 = catById(stamp.cam) || catFor(stamp.am);
+  const what = stamp.shape === "pair" ? pillHtml(stamp.am, c1) + pillHtml(stamp.pm, catById(stamp.cpm) || catFor(stamp.pm)) : pillHtml(stamp.am, c1);
+  const shape = {day:"journée entière", half:"demi-journée", pair:"matin + après-midi"}[stamp.shape];
+  bar.innerHTML = `${ico("tampon", 20, "inv")}<b>Tampon</b>${what}<span class="sb-hint" title="${stamp.shape === "half" ? "Sur une case journée entière : moitié gauche = matin, moitié droite = après-midi" : ""}">${shape} · ${isMobile() ? "touche" : "clique sur"} les cases à remplir</span>` +
+    `<button type="button" data-sb="undo"${undoStack.length ? "" : " disabled"} title="Ctrl+Z">↶ Annuler</button><button type="button" class="end" data-sb="end" title="Échap">Terminer</button>`;
+  bar.hidden = false;
+}
+function applyStamp(el, ev){
+  if (!stamp || !canWrite) return;
+  const rowId = el.dataset.r, ds = el.dataset.d, isRes = el.dataset.res === "1";
+  const cur = getCell(rowId, ds);
+  const day = (t, c) => ({am:t, pm:"", full:true, cam:c || null, cpm:null});
+  let val;
+  if (isRes){
+    if (stamp.shape === "pair"){ setStatus("Un tampon matin + après-midi ne se pose pas sur un véhicule ou un matériel"); return; }
+    val = day(stamp.am, stamp.cam);
+  } else if (stamp.shape === "day") val = day(stamp.am, stamp.cam);
+  else if (stamp.shape === "pair") val = {am:stamp.am, pm:stamp.pm, full:false, cam:stamp.cam || null, cpm:stamp.cpm || null};
+  else {
+    let slot = el.dataset.s;
+    if (!slot){ const r = el.getBoundingClientRect(); slot = ev && ev.clientX > r.left + r.width / 2 ? "pm" : "am"; }
+    const b = !cur ? {am:"", pm:"", cam:null, cpm:null}
+      : cur.full ? {am:cur.am || "", pm:cur.am || "", cam:cur.cam || null, cpm:cur.cam || null}
+      : {am:cur.am || "", pm:cur.pm || "", cam:cur.cam || null, cpm:cur.cpm || null};
+    if (slot === "pm"){ b.pm = stamp.am; b.cpm = stamp.cam || null; } else { b.am = stamp.am; b.cam = stamp.cam || null; }
+    if (!b.am) b.cam = null; if (!b.pm) b.cpm = null;
+    val = {...b, full:false};
+  }
+  if (sameCell(cur, val)){ setStatus("Déjà rempli avec le tampon"); return; }
+  const k = keyOf(rowId, ds);
+  const sc = catById(stamp.cam) || catFor(stamp.am);
+  const vehHint = !isRes && sc && VEH_CATS.includes(sc.id) && bookable().length ? " · pense au véhicule" : "";
+  // version : si un collègue vient de modifier cette case, on ne l'écrase pas
+  commit([{ligne: rowId, jour: ds, mode: "ecrire", valeur: val, version: metaVer(k)}]).then((conflits) => {
+    if (!conflits) return;
+    if (conflits.length) notify(`${rowNameOf(rowId)}, ${dayLabel(ds)} : cette case vient d'être modifiée par ${quiEst(conflits[0].par)}. Le tampon n'a pas été posé, la nouvelle valeur est affichée.`);
+    else setStatus(`Collé : ${rowNameOf(rowId)}, ${dayLabel(ds)}${vehHint} · Ctrl+Z pour annuler`);
   });
 }
 
@@ -1094,6 +1288,7 @@ $("gridwrap").addEventListener("click", e => {
   const dy = e.target.closest("[data-day]"); if (dy){ pickDay(dy.dataset.day); return; }
   if (e.target.closest("[data-mtoday]")){ pickDay(iso(now)); return; }
   const td = e.target.closest("[data-r][data-d]"); if (!td) return;
+  if (stamp){ applyStamp(td, e); return; }
   openEditor(td.dataset.r, td.dataset.d, td.dataset.res === "1");
 });
 $("gridwrap").addEventListener("change", e => { if (e.target.id === "mPerson"){ selPerson = e.target.value; try{localStorage.setItem("pl.person",selPerson);}catch(err){} renderAll(); } });
@@ -1103,6 +1298,7 @@ function pickDay(ds){ selDay = ds; const d = parseIso(ds); const ny = d.getFullY
 $("gridwrap").addEventListener("keydown", e => {
   if (e.key !== "Enter" && e.key !== " ") return;
   const td = e.target.closest("td[data-r]"); if (!td) return; e.preventDefault();
+  if (stamp){ applyStamp(td, null); return; }
   openEditor(td.dataset.r, td.dataset.d, td.dataset.res === "1");
 });
 $("filters").addEventListener("click", e => {
@@ -1119,13 +1315,38 @@ $("edMode").addEventListener("click", e => { const b = e.target.closest("button"
 $("edQuick").addEventListener("click", e => { const b = e.target.closest("button[data-q]"); if (!b) return;
   const q = b.dataset.q;
   if (ed.mode === "half" && lastField === "edFull") lastField = "edAm";
-  $(lastField).value = q; updatePreviews(); $(lastField).focus(); });
+  $(lastField).value = q; ed.cats[lastField] = {id: catFor(q)?.id || null, manual: false}; updatePreviews(); $(lastField).focus(); });
+$("drawer").addEventListener("click", e => {
+  const pk = e.target.closest("button[data-pick]");
+  if (pk){ ed.cats[pk.dataset.field] = {id: pk.dataset.pick, manual: true}; lastField = pk.dataset.field; renderPick(pk.dataset.field); renderVeh(); return; }
+  const au = e.target.closest("button[data-auto]");
+  if (au){ ed.cats[au.dataset.auto].manual = false; renderPick(au.dataset.auto); renderVeh(); $(au.dataset.auto).focus(); }
+});
+$("edStamp").onclick = () => {
+  const val = editorValue();
+  if (!val){ setStatus("Rien à copier : la case est vide"); return; }
+  const s = stampFromValue(val, ed.isRes);
+  if (sameCell(getCell(ed.rowId, ed.ds), val) && !$("edUntil").value && !ed.veh.size && !ed.vehBefore.size) closeEditor();
+  else saveEditor(false);
+  startStamp(s);
+};
+$("stampBar").addEventListener("click", e => {
+  const b = e.target.closest("button[data-sb]"); if (!b || b.disabled) return;
+  if (b.dataset.sb === "undo") undo(); else endStamp();
+});
 $("edVeh").addEventListener("click", e => { const b = e.target.closest("button[data-veh]"); if (!b || b.getAttribute("aria-disabled") === "true") return;
   const id = b.dataset.veh; ed.veh.has(id) ? ed.veh.delete(id) : ed.veh.add(id); renderVeh(); });
 $("edSave").onclick = () => saveEditor(false);
 $("edClear").onclick = () => saveEditor(true);
 $("edCancel").onclick = closeEditor; $("scrim").onclick = closeEditor;
-document.addEventListener("keydown", e => { if (e.key === "Escape" && ed) closeEditor(); });
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape"){ if (ed) closeEditor(); else if (stamp) endStamp(); return; }
+  if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === "z"){
+    const tag = document.activeElement ? document.activeElement.tagName : "";
+    if (ed || tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;   // laisse l'annulation native des champs
+    e.preventDefault(); undo();
+  }
+});
 
 // settings events
 const LISTS = {people:"p", vehicles:"v", materiel:"m"};
@@ -1139,6 +1360,7 @@ $("setPage").addEventListener("change", e => {
     if (f === "words") c.words = el.value.split(",").map(s => s.trim()).filter(Boolean);
     else c[f] = el.value;
     if (f === "color"){ el.parentElement.style.background = el.value; delete c.ink; }
+    if (f === "icon"){ const pv = cc.querySelector(".icprev"); if (pv) pv.innerHTML = ico(el.value, 20); }
     saveSettings(true); compileCats(); renderLegend(); return;
   }
   const li = el.closest("[data-list] .li[data-id]");
@@ -1268,6 +1490,8 @@ $("authMs").onclick = () => sb.auth.signInWithOAuth({provider: "azure", options:
 $("userBtn").onclick = () => { if (confirm("Se déconnecter du planning ?")) sb.auth.signOut(); };
 
 // ---------- démarrage ----------
+for (const [id, k] of [["tab-plan","planning"],["tab-cnt","compteurs"],["tab-set","reglages"]]) $(id).insertAdjacentHTML("afterbegin", ico(k, 18));
+$("edStamp").insertAdjacentHTML("afterbegin", ico("tampon", 16));
 compileCats(); renderAll();
 { const lg = document.querySelector(".logo img, .logo .logo-txt"); if (lg) $("authLogo").appendChild(lg.cloneNode(true)); }
 $("authMs").hidden = !CONNEXION_MICROSOFT;
