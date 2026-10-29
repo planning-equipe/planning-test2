@@ -206,8 +206,12 @@ table.cnt thead th .thi{display:inline-flex;align-items:center;gap:5px}
 .cpick button[aria-pressed="true"]{background:var(--c);color:var(--ink,color-mix(in oklab,var(--c) var(--ink-mix),var(--ink-base)));border-color:currentColor;box-shadow:0 0 0 1px currentColor}
 .cpick button[aria-pressed="true"].dk{color:#fff}
 .cpick button:not([aria-pressed="true"]) .ic{opacity:.8}
+.cpick button.dk:not([aria-pressed="true"]) .ic{--i1:#1D2D44;--i0:#FFFFFF}
 .cnote{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-height:18px;line-height:1.4}
 .cnote button{border:0;background:none;color:var(--accent-ink);font-weight:700;padding:0;font-size:12px;text-decoration:underline;text-underline-offset:2px}
+.cnote .warn{color:#7F5200;font-weight:700}
+.quick button.qk{border:1px solid var(--line-strong);background:var(--surface-2);color:var(--fg);font-weight:600;border-radius:8px}
+.quick button.qk:hover{border-color:var(--accent)}
 
 /* tampon */
 .btn.stamp{display:inline-flex;align-items:center;gap:6px;border-color:var(--accent);color:var(--accent-ink);font-weight:700}
@@ -382,7 +386,7 @@ body.stamping .gridwrap{padding-bottom:72px;box-sizing:border-box}
     <div class="field" id="fAm" hidden><label for="edAm">Matin</label><input type="text" id="edAm" autocomplete="off"><div class="cpick" id="cpAm" role="group" aria-label="Catégorie du matin"></div><div class="cnote" id="pvAm"></div></div>
     <div class="field" id="fPm" hidden><label for="edPm">Après-midi</label><input type="text" id="edPm" autocomplete="off"><div class="cpick" id="cpPm" role="group" aria-label="Catégorie de l'après-midi"></div><div class="cnote" id="pvPm"></div></div>
     <div class="vehbox" id="edVeh" hidden></div>
-    <div class="field"><label>Saisie rapide</label><div class="quick" id="edQuick"></div></div>
+    <div class="field"><label>Texte rapide</label><div class="quick" id="edQuick"></div><div class="hint" id="lbQuick">Écrit ce texte dans le champ ; la catégorie suit toute seule.</div></div>
     <div class="field"><label for="edUntil">Répéter jusqu'au (optionnel)</label><input type="date" id="edUntil">
       <div class="hint">La même saisie est posée sur chaque jour ouvré jusqu'à cette date. Les week-ends et jours fériés sont sautés.</div></div>
   </div>
@@ -1059,7 +1063,8 @@ function openEditor(rowId, ds, isRes){
   $("edMode").hidden = !!isRes;
   $("fFull").querySelector("label").textContent = isRes ? "Réservation (qui / pour quoi)" : "Journée";
   setMode(ed.mode);
-  $("edQuick").innerHTML = (isRes ? [] : QUICK).map(q => { const c = catFor(q); return `<button type="button" class="chip${catAttr(c)}" data-q="${esc(q)}">${ico(iconKeyFor(q, c), 14)}${esc(q)}</button>`; }).join("") || `<span class="empty-note">Exemple : initiales du conducteur, chantier…</span>`;
+  $("edQuick").innerHTML = (isRes ? [] : QUICK).map(q => `<button type="button" class="chip qk" data-q="${esc(q)}">${esc(q)}</button>`).join("") || `<span class="empty-note">Exemple : initiales du conducteur, chantier…</span>`;
+  $("lbQuick").hidden = !!isRes;
   $("scrim").hidden = false; $("drawer").hidden = false;
   setTimeout(() => (ed.mode === "full" ? $("edFull") : $("edAm")).focus(), 30);
   updatePreviews();
@@ -1089,7 +1094,10 @@ function renderPick(field){
   let note = "";
   if (st.manual && st.id) note = t ? `Catégorie choisie à la main${auto ? ` <button type="button" data-auto="${field}">revenir à « ${esc(catById(auto)?.label || "")} »</button>` : ""}` : "Catégorie choisie : tape le texte";
   else if (t && st.id) note = "Reconnue d'après le texte · un clic sur une autre pastille pour corriger";
-  if (t && (startsCode(t,"cp") || startsCode(t,"rtt"))) note += (note ? " · " : "") + `décompté en ${startsCode(t,"cp") ? "CP" : "RTT"}`;
+  const counted = t && (startsCode(t,"cp") || startsCode(t,"rtt"));
+  if (counted) note += (note ? " · " : "") + `décompté en ${startsCode(t,"cp") ? "CP" : "RTT"}`;
+  // les CP / RTT sont décomptés d'après le début du texte : on prévient si la catégorie Congés ne suffira pas
+  else if (t && st.id === "cong") note += `${note ? " · " : ""}<span class="warn">Non décompté : commence le texte par CP ou RTT pour qu'il compte</span>`;
   $(nt).innerHTML = note;
 }
 function updatePreviews(){ if (!ed) return; renderPick("edFull"); renderPick("edAm"); renderPick("edPm"); renderVeh(); }
