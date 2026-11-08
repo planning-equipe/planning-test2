@@ -138,6 +138,9 @@ tr.today td.date{box-shadow:inset 4px 0 0 var(--accent)}
 .quick{display:flex;flex-wrap:wrap;gap:6px}
 .quick button{border:0}
 .hint{font-size:12px;color:var(--muted);line-height:1.45}
+.wdays{display:flex;flex-wrap:wrap;gap:6px}
+.wdays button{border:1px solid var(--line-strong);background:var(--surface);color:var(--fg);border-radius:8px;padding:6px 12px;font-weight:600;min-width:48px;min-height:44px}
+.wdays button[aria-pressed="true"]{background:var(--brand);border-color:var(--brand);color:#fff}
 .vehbox{border:1px solid var(--brand-mid);background:var(--brand-soft);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:8px;animation:pop .22s ease-out}
 @keyframes pop{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
 .vehbox h4{margin:0;font-size:13.5px;color:var(--fg)}
@@ -389,6 +392,11 @@ body.stamping .gridwrap{padding-bottom:72px;box-sizing:border-box}
     <div class="field"><label>Texte rapide</label><div class="quick" id="edQuick"></div><div class="hint" id="lbQuick">Écrit ce texte dans le champ ; la catégorie suit toute seule.</div></div>
     <div class="field"><label for="edUntil">Répéter jusqu'au (optionnel)</label><input type="date" id="edUntil">
       <div class="hint">La même saisie est posée sur chaque jour ouvré jusqu'à cette date. Les week-ends et jours fériés sont sautés.</div></div>
+    <div class="field" id="fWeekly">
+      <label class="def" for="edWeekly" style="font-size:13px;font-weight:600"><input type="checkbox" id="edWeekly"> Rythme régulier : répéter chaque semaine</label>
+      <div class="wdays" id="edWeekDays" role="group" aria-label="Jours de la semaine concernés" hidden></div>
+      <div class="hint" id="edWeeklyHint" hidden></div>
+    </div>
   </div>
   <footer>
     <button class="btn danger" id="edClear" type="button">Effacer</button>
@@ -440,16 +448,20 @@ const DEFAULT_CATS = [
   {id:"tt", label:"Télétravail", color:"#DDEFFA", ink:"#1B5E80", mode:"contains", words:["télétravail","TTL","TLT","remote"]},
   {id:"reu", label:"Réunion / RDV", color:"#FFF0D4", ink:"#7F5200", mode:"contains", words:["réunion","réu","visio","CSE","entretien","RDV"]},
   {id:"nuit", label:"Nuit", color:"#DCE1E9", ink:"#1D2D44", mode:"contains", words:["nuit","nocturne"]},
+  {id:"tp", label:"Temps partiel", color:"#EFE3F3", ink:"#5B2A6B", mode:"contains", words:["temps partiel","ne travaille pas"], fill:"Ne travaille pas"},
 ];
+// catégories qui proposent un véhicule (veh) et/ou du matériel (mat) à la saisie, tant que le réglage n'a pas été choisi à la main
+const OFFER_DEFAULT = {t:{veh:true, mat:true}, reu:{veh:true, mat:false}, nuit:{veh:true, mat:true}};
+const offers = (c, kind) => c ? (c[kind] !== undefined ? !!c[kind] : !!(OFFER_DEFAULT[c.id] || {})[kind]) : false;
 const QUICK = ["CP","RTT","Télétravail","Arrêt maladie","Réunion","Nuit"];
 const MONTHS = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
 const DAYS = ["dim.","lun.","mar.","mer.","jeu.","ven.","sam."];
 const DAYS_LONG = ["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
 
 // ---------- icônes (charte : bleu nuit #1D2D44, turquoise #38ABAE) ----------
-const ICONS = {"maladie":"<path class=\"s1\" d=\"M18 13V10a2.5 2.5 0 0 1 2.5-2.5h7A2.5 2.5 0 0 1 30 10v3\" fill=\"none\" stroke-width=\"4\" stroke-linecap=\"round\"/><rect class=\"f1\" x=\"5\" y=\"13\" width=\"38\" height=\"28\" rx=\"5\"/><rect class=\"f2\" x=\"20.5\" y=\"18.5\" width=\"7\" height=\"17\" rx=\"1.5\"/><rect class=\"f2\" x=\"15.5\" y=\"23.5\" width=\"17\" height=\"7\" rx=\"1.5\"/>","conges":"<path class=\"f2\" d=\"M5 22C8 11.5 15.5 6 24 6S40 11.5 43 22C39.5 19 35 19 31.5 22C28 19 20 19 16.5 22C13 19 8.5 19 5 22Z\"/><circle class=\"f1\" cx=\"24\" cy=\"5\" r=\"2.2\"/><line class=\"s1\" x1=\"24\" y1=\"20\" x2=\"24\" y2=\"37\" stroke-width=\"4\" stroke-linecap=\"round\"/><path class=\"s1\" d=\"M5 42.5q4.75-4 9.5 0t9.5 0t9.5 0t9.5 0\" fill=\"none\" stroke-width=\"3.6\" stroke-linecap=\"round\"/>","rtt":"<path class=\"s1\" d=\"M11 18.5A15 15 0 1 1 9.9 31.1\" fill=\"none\" stroke-width=\"4\" stroke-linecap=\"round\"/><polygon class=\"f2 s2\" points=\"9,22.5 16.2,19.2 7.8,14.2\" stroke-width=\"1.5\" stroke-linejoin=\"round\"/><path class=\"s2\" d=\"M24 18v8l6 3.5\" fill=\"none\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><circle class=\"f1\" cx=\"24\" cy=\"26\" r=\"2.6\"/>","bureau":"<rect class=\"f1\" x=\"10\" y=\"6\" width=\"28\" height=\"36\" rx=\"3\"/><rect class=\"f2\" x=\"15\" y=\"11\" width=\"7\" height=\"5\" rx=\"1\"/><rect class=\"f2\" x=\"26\" y=\"11\" width=\"7\" height=\"5\" rx=\"1\"/><rect class=\"f2\" x=\"15\" y=\"20\" width=\"7\" height=\"5\" rx=\"1\"/><rect class=\"f2\" x=\"26\" y=\"20\" width=\"7\" height=\"5\" rx=\"1\"/><rect class=\"f2\" x=\"20\" y=\"30\" width=\"8\" height=\"12\" rx=\"1.5\"/><line class=\"s1\" x1=\"5\" y1=\"42\" x2=\"43\" y2=\"42\" stroke-width=\"4\" stroke-linecap=\"round\"/>","terrain":"<path class=\"f2\" d=\"M9 35C9 23 15.5 15 24 15S39 23 39 35Z\"/><rect class=\"f1\" x=\"20.5\" y=\"11\" width=\"7\" height=\"16\" rx=\"3.5\"/><rect class=\"f1\" x=\"4\" y=\"33\" width=\"40\" height=\"7\" rx=\"3.5\"/>","teletravail":"<path class=\"f1 s1\" d=\"M24 5L3 23h6v19h30V23h6Z\" stroke-width=\"1.5\" stroke-linejoin=\"round\"/><rect class=\"f2\" x=\"15.5\" y=\"23\" width=\"17\" height=\"11\" rx=\"1.5\"/><rect class=\"f2\" x=\"12.5\" y=\"35.5\" width=\"23\" height=\"3.2\" rx=\"1.6\"/>","reunion":"<rect class=\"f1\" x=\"3\" y=\"6\" width=\"27\" height=\"20\" rx=\"5\"/><path class=\"f1 s1\" d=\"M9 25v7l8-7Z\" stroke-width=\"1.5\" stroke-linejoin=\"round\"/><circle class=\"f0\" cx=\"10\" cy=\"16\" r=\"2.2\"/><circle class=\"f0\" cx=\"16.5\" cy=\"16\" r=\"2.2\"/><circle class=\"f0\" cx=\"23\" cy=\"16\" r=\"2.2\"/><rect class=\"f2\" x=\"19\" y=\"19.5\" width=\"26\" height=\"18\" rx=\"5\"/><path class=\"f2 s2\" d=\"M39 37v6l-7-6Z\" stroke-width=\"1.5\" stroke-linejoin=\"round\"/>","nuit":"<path class=\"f1\" d=\"M21.7 10A16 16 0 1 0 37.3 30.8A13 13 0 0 1 21.7 10Z\"/><path class=\"f2\" d=\"M35 4.5 Q35 10 40.5 10 Q35 10 35 15.5 Q35 10 29.5 10 Q35 10 35 4.5Z\"/><path class=\"f2\" d=\"M42.5 17.2 Q42.5 21 46.3 21 Q42.5 21 42.5 24.8 Q42.5 21 38.7 21 Q42.5 21 42.5 17.2Z\"/>","ferie":"<rect class=\"f1\" x=\"5\" y=\"9\" width=\"38\" height=\"33\" rx=\"5\"/><path class=\"f2\" d=\"M5 14a5 5 0 0 1 5-5h28a5 5 0 0 1 5 5v4H5Z\"/><rect class=\"f1\" x=\"13\" y=\"4.5\" width=\"4.5\" height=\"9\" rx=\"2.25\"/><rect class=\"f1\" x=\"30.5\" y=\"4.5\" width=\"4.5\" height=\"9\" rx=\"2.25\"/><polygon class=\"f2 s2\" points=\"24.00,22.00 26.17,27.51 32.08,27.87 27.52,31.64 29.00,37.38 24.00,34.20 19.00,37.38 20.48,31.64 15.92,27.87 21.83,27.51\" stroke-width=\"1\" stroke-linejoin=\"round\"/>","date":"<rect class=\"f1\" x=\"5\" y=\"9\" width=\"38\" height=\"33\" rx=\"5\"/><path class=\"f2\" d=\"M5 14a5 5 0 0 1 5-5h28a5 5 0 0 1 5 5v4H5Z\"/><rect class=\"f1\" x=\"13\" y=\"4.5\" width=\"4.5\" height=\"9\" rx=\"2.25\"/><rect class=\"f1\" x=\"30.5\" y=\"4.5\" width=\"4.5\" height=\"9\" rx=\"2.25\"/><rect class=\"f0\" x=\"10\" y=\"22.5\" width=\"7\" height=\"6\" rx=\"1\"/><rect class=\"f0\" x=\"20.5\" y=\"22.5\" width=\"7\" height=\"6\" rx=\"1\"/><rect class=\"f2\" x=\"31\" y=\"22.5\" width=\"7\" height=\"6\" rx=\"1\"/><rect class=\"f0\" x=\"10\" y=\"32\" width=\"7\" height=\"6\" rx=\"1\"/><rect class=\"f0\" x=\"20.5\" y=\"32\" width=\"7\" height=\"6\" rx=\"1\"/>","equipe":"<circle class=\"f2\" cx=\"11\" cy=\"19\" r=\"5\"/><circle class=\"f2\" cx=\"37\" cy=\"19\" r=\"5\"/><path class=\"f2\" d=\"M2.5 39C2.5 31.5 6.5 27 11 27S19.5 31.5 19.5 39Z\"/><path class=\"f2\" d=\"M28.5 39C28.5 31.5 32.5 27 37 27S45.5 31.5 45.5 39Z\"/><circle class=\"f1\" cx=\"24\" cy=\"15\" r=\"7\"/><path class=\"f1\" d=\"M12 42C12 31.5 17.5 25.5 24 25.5S36 31.5 36 42Z\"/>","vehicules":"<path class=\"f1\" d=\"M4 33V16a3 3 0 0 1 3-3h23.5a2.5 2.5 0 0 1 2.2 1.3L36.5 22l5 1.6A3.5 3.5 0 0 1 44 27v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z\"/><path class=\"f2\" d=\"M27.5 16.5V23h7l-3-5.6a1.6 1.6 0 0 0-1.4-.9Z\"/><rect class=\"f2\" x=\"8\" y=\"22\" width=\"15\" height=\"4\" rx=\"2\"/><circle class=\"f1 s0\" cx=\"13\" cy=\"36\" r=\"5.5\" stroke-width=\"1.6\"/><circle class=\"f2\" cx=\"13\" cy=\"36\" r=\"2.2\"/><circle class=\"f1 s0\" cx=\"35\" cy=\"36\" r=\"5.5\" stroke-width=\"1.6\"/><circle class=\"f2\" cx=\"35\" cy=\"36\" r=\"2.2\"/>","materiel":"<g transform=\"rotate(45 24 24)\"><rect class=\"f1\" x=\"17\" y=\"22.4\" width=\"23\" height=\"3.2\" rx=\"1.2\"/><path class=\"f1\" d=\"M39 22.6h3.5v2.8H39Z\"/><rect class=\"f2\" x=\"3\" y=\"18.5\" width=\"16\" height=\"11\" rx=\"4.5\"/></g><g transform=\"rotate(-45 24 24)\"><rect class=\"f1\" x=\"5\" y=\"20.5\" width=\"27\" height=\"7\" rx=\"3.5\"/><path class=\"s1\" d=\"M41.6 19.6A6.5 6.5 0 1 0 41.6 28.4\" fill=\"none\" stroke-width=\"5.5\" stroke-linecap=\"round\"/></g>","matin":"<path class=\"f2\" d=\"M11 34A13 13 0 0 1 37 34Z\"/><path class=\"s0\" d=\"M19 30.5l5-5 5 5\" fill=\"none\" stroke-width=\"3.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><line class=\"s1\" x1=\"24\" y1=\"17\" x2=\"24\" y2=\"11.5\" stroke-width=\"3.6\" stroke-linecap=\"round\"/><line class=\"s1\" x1=\"12.7\" y1=\"22.7\" x2=\"9\" y2=\"19\" stroke-width=\"3.6\" stroke-linecap=\"round\"/><line class=\"s1\" x1=\"35.3\" y1=\"22.7\" x2=\"39\" y2=\"19\" stroke-width=\"3.6\" stroke-linecap=\"round\"/><line class=\"s1\" x1=\"4\" y1=\"38.5\" x2=\"44\" y2=\"38.5\" stroke-width=\"4\" stroke-linecap=\"round\"/>","apres-midi":"<path class=\"f2\" d=\"M11 34A13 13 0 0 1 37 34Z\"/><path class=\"s0\" d=\"M19 26l5 5 5-5\" fill=\"none\" stroke-width=\"3.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><line class=\"s1\" x1=\"24\" y1=\"17\" x2=\"24\" y2=\"11.5\" stroke-width=\"3.6\" stroke-linecap=\"round\"/><line class=\"s1\" x1=\"12.7\" y1=\"22.7\" x2=\"9\" y2=\"19\" stroke-width=\"3.6\" stroke-linecap=\"round\"/><line class=\"s1\" x1=\"35.3\" y1=\"22.7\" x2=\"39\" y2=\"19\" stroke-width=\"3.6\" stroke-linecap=\"round\"/><line class=\"s1\" x1=\"4\" y1=\"38.5\" x2=\"44\" y2=\"38.5\" stroke-width=\"4\" stroke-linecap=\"round\"/>","planning":"<rect class=\"f1\" x=\"4\" y=\"7\" width=\"40\" height=\"34\" rx=\"5\"/><path class=\"f2\" d=\"M4 12a5 5 0 0 1 5-5h30a5 5 0 0 1 5 5v4H4Z\"/><rect class=\"f0\" x=\"9\" y=\"20.5\" width=\"17\" height=\"4.5\" rx=\"2.25\"/><rect class=\"f2\" x=\"18\" y=\"27.5\" width=\"21\" height=\"4.5\" rx=\"2.25\"/><rect class=\"f0\" x=\"12\" y=\"34.5\" width=\"14\" height=\"4\" rx=\"2\"/>","compteurs":"<rect class=\"f1\" x=\"7\" y=\"23\" width=\"8\" height=\"17\" rx=\"2\"/><rect class=\"f2\" x=\"20\" y=\"10\" width=\"8\" height=\"30\" rx=\"2\"/><rect class=\"f1\" x=\"33\" y=\"17\" width=\"8\" height=\"23\" rx=\"2\"/><line class=\"s1\" x1=\"4\" y1=\"42.5\" x2=\"44\" y2=\"42.5\" stroke-width=\"3.6\" stroke-linecap=\"round\"/>","reglages":"<polygon class=\"f1 s1\" points=\"38.49,20.12 43.78,21.04 43.78,26.96 38.49,27.88 36.99,31.50 40.08,35.90 35.90,40.08 31.50,36.99 27.88,38.49 26.96,43.78 21.04,43.78 20.12,38.49 16.50,36.99 12.10,40.08 7.92,35.90 11.01,31.50 9.51,27.88 4.22,26.96 4.22,21.04 9.51,20.12 11.01,16.50 7.92,12.10 12.10,7.92 16.50,11.01 20.12,9.51 21.04,4.22 26.96,4.22 27.88,9.51 31.50,11.01 35.90,7.92 40.08,12.10 36.99,16.50\" stroke-width=\"2.5\" stroke-linejoin=\"round\"/><circle class=\"f2\" cx=\"24\" cy=\"24\" r=\"7\"/>","tampon":"<circle class=\"f1\" cx=\"24\" cy=\"10\" r=\"6\"/><rect class=\"f1\" x=\"21\" y=\"13\" width=\"6\" height=\"11\"/><rect class=\"f1\" x=\"9\" y=\"23\" width=\"30\" height=\"9\" rx=\"3\"/><rect class=\"f2\" x=\"11\" y=\"32\" width=\"26\" height=\"4\" rx=\"1\"/><rect class=\"f2\" x=\"6\" y=\"40\" width=\"36\" height=\"3.5\" rx=\"1.75\"/>"};
-const ICON_NAMES = {"maladie":"Maladie / arrêt","conges":"Congés (CP)","rtt":"RTT","bureau":"Bureau (B_)","terrain":"Terrain (T_)","teletravail":"Télétravail","reunion":"Réunion / RDV","nuit":"Nuit","ferie":"Jour férié","date":"Date","equipe":"Équipe","vehicules":"Véhicules","materiel":"Matériel","matin":"Matin","apres-midi":"Après-midi","planning":"Planning","compteurs":"Compteurs","reglages":"Réglages","tampon":"Tampon"};
-const CAT_ICON = {mal:"maladie", cong:"conges", b:"bureau", t:"terrain", tt:"teletravail", reu:"reunion", nuit:"nuit"};
+const ICONS = {"maladie":"<path class=\"s1\" d=\"M18 13V10a2.5 2.5 0 0 1 2.5-2.5h7A2.5 2.5 0 0 1 30 10v3\" fill=\"none\" stroke-width=\"4\" stroke-linecap=\"round\"/><rect class=\"f1\" x=\"5\" y=\"13\" width=\"38\" height=\"28\" rx=\"5\"/><rect class=\"f2\" x=\"20.5\" y=\"18.5\" width=\"7\" height=\"17\" rx=\"1.5\"/><rect class=\"f2\" x=\"15.5\" y=\"23.5\" width=\"17\" height=\"7\" rx=\"1.5\"/>","conges":"<path class=\"f2\" d=\"M5 22C8 11.5 15.5 6 24 6S40 11.5 43 22C39.5 19 35 19 31.5 22C28 19 20 19 16.5 22C13 19 8.5 19 5 22Z\"/><circle class=\"f1\" cx=\"24\" cy=\"5\" r=\"2.2\"/><line class=\"s1\" x1=\"24\" y1=\"20\" x2=\"24\" y2=\"37\" stroke-width=\"4\" stroke-linecap=\"round\"/><path class=\"s1\" d=\"M5 42.5q4.75-4 9.5 0t9.5 0t9.5 0t9.5 0\" fill=\"none\" stroke-width=\"3.6\" stroke-linecap=\"round\"/>","rtt":"<path class=\"s1\" d=\"M11 18.5A15 15 0 1 1 9.9 31.1\" fill=\"none\" stroke-width=\"4\" stroke-linecap=\"round\"/><polygon class=\"f2 s2\" points=\"9,22.5 16.2,19.2 7.8,14.2\" stroke-width=\"1.5\" stroke-linejoin=\"round\"/><path class=\"s2\" d=\"M24 18v8l6 3.5\" fill=\"none\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><circle class=\"f1\" cx=\"24\" cy=\"26\" r=\"2.6\"/>","bureau":"<rect class=\"f1\" x=\"10\" y=\"6\" width=\"28\" height=\"36\" rx=\"3\"/><rect class=\"f2\" x=\"15\" y=\"11\" width=\"7\" height=\"5\" rx=\"1\"/><rect class=\"f2\" x=\"26\" y=\"11\" width=\"7\" height=\"5\" rx=\"1\"/><rect class=\"f2\" x=\"15\" y=\"20\" width=\"7\" height=\"5\" rx=\"1\"/><rect class=\"f2\" x=\"26\" y=\"20\" width=\"7\" height=\"5\" rx=\"1\"/><rect class=\"f2\" x=\"20\" y=\"30\" width=\"8\" height=\"12\" rx=\"1.5\"/><line class=\"s1\" x1=\"5\" y1=\"42\" x2=\"43\" y2=\"42\" stroke-width=\"4\" stroke-linecap=\"round\"/>","terrain":"<path class=\"f2\" d=\"M9 35C9 23 15.5 15 24 15S39 23 39 35Z\"/><rect class=\"f1\" x=\"20.5\" y=\"11\" width=\"7\" height=\"16\" rx=\"3.5\"/><rect class=\"f1\" x=\"4\" y=\"33\" width=\"40\" height=\"7\" rx=\"3.5\"/>","teletravail":"<path class=\"f1 s1\" d=\"M24 5L3 23h6v19h30V23h6Z\" stroke-width=\"1.5\" stroke-linejoin=\"round\"/><rect class=\"f2\" x=\"15.5\" y=\"23\" width=\"17\" height=\"11\" rx=\"1.5\"/><rect class=\"f2\" x=\"12.5\" y=\"35.5\" width=\"23\" height=\"3.2\" rx=\"1.6\"/>","reunion":"<rect class=\"f1\" x=\"3\" y=\"6\" width=\"27\" height=\"20\" rx=\"5\"/><path class=\"f1 s1\" d=\"M9 25v7l8-7Z\" stroke-width=\"1.5\" stroke-linejoin=\"round\"/><circle class=\"f0\" cx=\"10\" cy=\"16\" r=\"2.2\"/><circle class=\"f0\" cx=\"16.5\" cy=\"16\" r=\"2.2\"/><circle class=\"f0\" cx=\"23\" cy=\"16\" r=\"2.2\"/><rect class=\"f2\" x=\"19\" y=\"19.5\" width=\"26\" height=\"18\" rx=\"5\"/><path class=\"f2 s2\" d=\"M39 37v6l-7-6Z\" stroke-width=\"1.5\" stroke-linejoin=\"round\"/>","nuit":"<path class=\"f1\" d=\"M21.7 10A16 16 0 1 0 37.3 30.8A13 13 0 0 1 21.7 10Z\"/><path class=\"f2\" d=\"M35 4.5 Q35 10 40.5 10 Q35 10 35 15.5 Q35 10 29.5 10 Q35 10 35 4.5Z\"/><path class=\"f2\" d=\"M42.5 17.2 Q42.5 21 46.3 21 Q42.5 21 42.5 24.8 Q42.5 21 38.7 21 Q42.5 21 42.5 17.2Z\"/>","ferie":"<rect class=\"f1\" x=\"5\" y=\"9\" width=\"38\" height=\"33\" rx=\"5\"/><path class=\"f2\" d=\"M5 14a5 5 0 0 1 5-5h28a5 5 0 0 1 5 5v4H5Z\"/><rect class=\"f1\" x=\"13\" y=\"4.5\" width=\"4.5\" height=\"9\" rx=\"2.25\"/><rect class=\"f1\" x=\"30.5\" y=\"4.5\" width=\"4.5\" height=\"9\" rx=\"2.25\"/><polygon class=\"f2 s2\" points=\"24.00,22.00 26.17,27.51 32.08,27.87 27.52,31.64 29.00,37.38 24.00,34.20 19.00,37.38 20.48,31.64 15.92,27.87 21.83,27.51\" stroke-width=\"1\" stroke-linejoin=\"round\"/>","date":"<rect class=\"f1\" x=\"5\" y=\"9\" width=\"38\" height=\"33\" rx=\"5\"/><path class=\"f2\" d=\"M5 14a5 5 0 0 1 5-5h28a5 5 0 0 1 5 5v4H5Z\"/><rect class=\"f1\" x=\"13\" y=\"4.5\" width=\"4.5\" height=\"9\" rx=\"2.25\"/><rect class=\"f1\" x=\"30.5\" y=\"4.5\" width=\"4.5\" height=\"9\" rx=\"2.25\"/><rect class=\"f0\" x=\"10\" y=\"22.5\" width=\"7\" height=\"6\" rx=\"1\"/><rect class=\"f0\" x=\"20.5\" y=\"22.5\" width=\"7\" height=\"6\" rx=\"1\"/><rect class=\"f2\" x=\"31\" y=\"22.5\" width=\"7\" height=\"6\" rx=\"1\"/><rect class=\"f0\" x=\"10\" y=\"32\" width=\"7\" height=\"6\" rx=\"1\"/><rect class=\"f0\" x=\"20.5\" y=\"32\" width=\"7\" height=\"6\" rx=\"1\"/>","equipe":"<circle class=\"f2\" cx=\"11\" cy=\"19\" r=\"5\"/><circle class=\"f2\" cx=\"37\" cy=\"19\" r=\"5\"/><path class=\"f2\" d=\"M2.5 39C2.5 31.5 6.5 27 11 27S19.5 31.5 19.5 39Z\"/><path class=\"f2\" d=\"M28.5 39C28.5 31.5 32.5 27 37 27S45.5 31.5 45.5 39Z\"/><circle class=\"f1\" cx=\"24\" cy=\"15\" r=\"7\"/><path class=\"f1\" d=\"M12 42C12 31.5 17.5 25.5 24 25.5S36 31.5 36 42Z\"/>","vehicules":"<path class=\"f1\" d=\"M4 33V16a3 3 0 0 1 3-3h23.5a2.5 2.5 0 0 1 2.2 1.3L36.5 22l5 1.6A3.5 3.5 0 0 1 44 27v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z\"/><path class=\"f2\" d=\"M27.5 16.5V23h7l-3-5.6a1.6 1.6 0 0 0-1.4-.9Z\"/><rect class=\"f2\" x=\"8\" y=\"22\" width=\"15\" height=\"4\" rx=\"2\"/><circle class=\"f1 s0\" cx=\"13\" cy=\"36\" r=\"5.5\" stroke-width=\"1.6\"/><circle class=\"f2\" cx=\"13\" cy=\"36\" r=\"2.2\"/><circle class=\"f1 s0\" cx=\"35\" cy=\"36\" r=\"5.5\" stroke-width=\"1.6\"/><circle class=\"f2\" cx=\"35\" cy=\"36\" r=\"2.2\"/>","materiel":"<g transform=\"rotate(45 24 24)\"><rect class=\"f1\" x=\"17\" y=\"22.4\" width=\"23\" height=\"3.2\" rx=\"1.2\"/><path class=\"f1\" d=\"M39 22.6h3.5v2.8H39Z\"/><rect class=\"f2\" x=\"3\" y=\"18.5\" width=\"16\" height=\"11\" rx=\"4.5\"/></g><g transform=\"rotate(-45 24 24)\"><rect class=\"f1\" x=\"5\" y=\"20.5\" width=\"27\" height=\"7\" rx=\"3.5\"/><path class=\"s1\" d=\"M41.6 19.6A6.5 6.5 0 1 0 41.6 28.4\" fill=\"none\" stroke-width=\"5.5\" stroke-linecap=\"round\"/></g>","matin":"<path class=\"f2\" d=\"M11 34A13 13 0 0 1 37 34Z\"/><path class=\"s0\" d=\"M19 30.5l5-5 5 5\" fill=\"none\" stroke-width=\"3.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><line class=\"s1\" x1=\"24\" y1=\"17\" x2=\"24\" y2=\"11.5\" stroke-width=\"3.6\" stroke-linecap=\"round\"/><line class=\"s1\" x1=\"12.7\" y1=\"22.7\" x2=\"9\" y2=\"19\" stroke-width=\"3.6\" stroke-linecap=\"round\"/><line class=\"s1\" x1=\"35.3\" y1=\"22.7\" x2=\"39\" y2=\"19\" stroke-width=\"3.6\" stroke-linecap=\"round\"/><line class=\"s1\" x1=\"4\" y1=\"38.5\" x2=\"44\" y2=\"38.5\" stroke-width=\"4\" stroke-linecap=\"round\"/>","apres-midi":"<path class=\"f2\" d=\"M11 34A13 13 0 0 1 37 34Z\"/><path class=\"s0\" d=\"M19 26l5 5 5-5\" fill=\"none\" stroke-width=\"3.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><line class=\"s1\" x1=\"24\" y1=\"17\" x2=\"24\" y2=\"11.5\" stroke-width=\"3.6\" stroke-linecap=\"round\"/><line class=\"s1\" x1=\"12.7\" y1=\"22.7\" x2=\"9\" y2=\"19\" stroke-width=\"3.6\" stroke-linecap=\"round\"/><line class=\"s1\" x1=\"35.3\" y1=\"22.7\" x2=\"39\" y2=\"19\" stroke-width=\"3.6\" stroke-linecap=\"round\"/><line class=\"s1\" x1=\"4\" y1=\"38.5\" x2=\"44\" y2=\"38.5\" stroke-width=\"4\" stroke-linecap=\"round\"/>","planning":"<rect class=\"f1\" x=\"4\" y=\"7\" width=\"40\" height=\"34\" rx=\"5\"/><path class=\"f2\" d=\"M4 12a5 5 0 0 1 5-5h30a5 5 0 0 1 5 5v4H4Z\"/><rect class=\"f0\" x=\"9\" y=\"20.5\" width=\"17\" height=\"4.5\" rx=\"2.25\"/><rect class=\"f2\" x=\"18\" y=\"27.5\" width=\"21\" height=\"4.5\" rx=\"2.25\"/><rect class=\"f0\" x=\"12\" y=\"34.5\" width=\"14\" height=\"4\" rx=\"2\"/>","compteurs":"<rect class=\"f1\" x=\"7\" y=\"23\" width=\"8\" height=\"17\" rx=\"2\"/><rect class=\"f2\" x=\"20\" y=\"10\" width=\"8\" height=\"30\" rx=\"2\"/><rect class=\"f1\" x=\"33\" y=\"17\" width=\"8\" height=\"23\" rx=\"2\"/><line class=\"s1\" x1=\"4\" y1=\"42.5\" x2=\"44\" y2=\"42.5\" stroke-width=\"3.6\" stroke-linecap=\"round\"/>","reglages":"<polygon class=\"f1 s1\" points=\"38.49,20.12 43.78,21.04 43.78,26.96 38.49,27.88 36.99,31.50 40.08,35.90 35.90,40.08 31.50,36.99 27.88,38.49 26.96,43.78 21.04,43.78 20.12,38.49 16.50,36.99 12.10,40.08 7.92,35.90 11.01,31.50 9.51,27.88 4.22,26.96 4.22,21.04 9.51,20.12 11.01,16.50 7.92,12.10 12.10,7.92 16.50,11.01 20.12,9.51 21.04,4.22 26.96,4.22 27.88,9.51 31.50,11.01 35.90,7.92 40.08,12.10 36.99,16.50\" stroke-width=\"2.5\" stroke-linejoin=\"round\"/><circle class=\"f2\" cx=\"24\" cy=\"24\" r=\"7\"/>","absent":"<circle class=\"f1\" cx=\"24\" cy=\"24\" r=\"19\"/><path class=\"s0\" d=\"M16.5 16.5l15 15M31.5 16.5l-15 15\" fill=\"none\" stroke-width=\"4.5\" stroke-linecap=\"round\"/>","tampon":"<circle class=\"f1\" cx=\"24\" cy=\"10\" r=\"6\"/><rect class=\"f1\" x=\"21\" y=\"13\" width=\"6\" height=\"11\"/><rect class=\"f1\" x=\"9\" y=\"23\" width=\"30\" height=\"9\" rx=\"3\"/><rect class=\"f2\" x=\"11\" y=\"32\" width=\"26\" height=\"4\" rx=\"1\"/><rect class=\"f2\" x=\"6\" y=\"40\" width=\"36\" height=\"3.5\" rx=\"1.75\"/>"};
+const ICON_NAMES = {"maladie":"Maladie / arrêt","conges":"Congés (CP)","rtt":"RTT","bureau":"Bureau (B_)","terrain":"Terrain (T_)","teletravail":"Télétravail","reunion":"Réunion / RDV","nuit":"Nuit","ferie":"Jour férié","date":"Date","equipe":"Équipe","vehicules":"Véhicules","materiel":"Matériel","matin":"Matin","apres-midi":"Après-midi","planning":"Planning","compteurs":"Compteurs","reglages":"Réglages","tampon":"Tampon","absent":"Ne travaille pas (croix)"};
+const CAT_ICON = {mal:"maladie", cong:"conges", b:"bureau", t:"terrain", tt:"teletravail", reu:"reunion", nuit:"nuit", tp:"absent"};
 const ico = (k, s = 16, cls = "") => k && ICONS[k] ? `<svg class="ic${cls ? " " + cls : ""}" viewBox="0 0 48 48" width="${s}" height="${s}" aria-hidden="true" focusable="false">${ICONS[k]}</svg>` : "";
 
 // ---------- state ----------
@@ -623,7 +635,7 @@ function renderToday(){
       const txt = v[half];
       if (!txt) continue;
       const c = catOf(v, half);
-      if (!c || !["mal","cong","tt","nuit"].includes(c.id)) continue;
+      if (!c || !["mal","cong","tt","nuit","tp"].includes(c.id)) continue;
       out.push(`<span class="chip${catAttr(c)}">${ico(iconKeyFor(txt, c))}<b>${esc(p.name)}</b> ${esc(when)}${esc(txt)}</span>`);
     }
   }
@@ -786,6 +798,10 @@ function catCard(c, i, n){
         <span class="icprev" aria-hidden="true">${ico((c.icon !== undefined && c.icon !== null ? c.icon : CAT_ICON[c.id]) || "", 20)}</span>
         <select data-f="icon" aria-label="Icône de la catégorie">${["", ...Object.keys(ICONS).filter(k => k !== "tampon")].map(k => `<option value="${k}"${((c.icon !== undefined && c.icon !== null ? c.icon : CAT_ICON[c.id]) || "") === k ? " selected" : ""}>${k ? esc(ICON_NAMES[k]) : "Sans icône"}</option>`).join("")}</select></div>
       <textarea data-f="words" aria-label="Mots-clés">${esc((c.words||[]).join(", "))}</textarea>
+      <div class="def" style="flex-wrap:wrap;gap:6px 14px">À la saisie, proposer :
+        <label class="def"><input type="checkbox" data-f="veh"${offers(c,"veh")?" checked":""}> des véhicules</label>
+        <label class="def"><input type="checkbox" data-f="mat"${offers(c,"mat")?" checked":""}> du matériel</label></div>
+      <label class="def">Texte posé automatiquement : <input type="text" data-f="fill" value="${esc(c.fill||"")}" placeholder="(aucun)" aria-label="Texte posé automatiquement" style="font-weight:400"></label>
       <label class="def"><input type="radio" name="defcat" value="${esc(c.id)}"${settings.defaultCat===c.id?" checked":""}> Couleur du texte libre (aucun mot-clé reconnu)</label>
     </div>
     <div class="side">
@@ -823,12 +839,81 @@ function renderSettings(){
         ${listCard("Matériel","Une colonne par matériel.","materiel",settings.materiel||[],false,"materiel")}
       </div>
     </div>
+    <div class="card" id="expCard"><h3>${ico("planning",20)}Sauvegarde et export</h3>
+      <p class="desc">Télécharge le planning sur une période (laisse vide pour tout prendre). La <b>sauvegarde (JSON)</b> garde tout : cases, équipe, véhicules, matériel, catégories. L'<b>export Excel (CSV)</b> met une ligne par personne, par jour et par demi-journée : pratique pour les statistiques.</p>
+      <div class="row" style="gap:10px;align-items:end;flex-wrap:wrap">
+        <label class="def" style="flex-direction:column;align-items:flex-start">Du<input type="date" id="expDu" value="${esc(expDu)}" style="border:1px solid var(--line-strong);border-radius:6px;padding:6px 8px;background:var(--surface)"></label>
+        <label class="def" style="flex-direction:column;align-items:flex-start">Au<input type="date" id="expAu" value="${esc(expAu)}" style="border:1px solid var(--line-strong);border-radius:6px;padding:6px 8px;background:var(--surface)"></label>
+        <button class="btn sm primary" id="expJson" type="button">Sauvegarde (JSON)</button>
+        <button class="btn sm" id="expCsv" type="button">Export Excel (CSV)</button>
+      </div>
+    </div>
     <div class="card" data-list="extraHolidays"><h3>${ico("ferie",20)}Ponts et fermetures</h3>
       <p class="desc">Les jours fériés français sont calculés automatiquement chaque année. Ajoute ici un pont ou une fermeture : le jour se grise et n'est pas décompté.</p>
       <div class="list">${(settings.extraHolidays||[]).slice().sort((a,b)=>a.date.localeCompare(b.date)).map(hd => `<div class="li" data-date="${esc(hd.date)}"><span style="min-width:7em;font-variant-numeric:tabular-nums">${esc(hd.date.split("-").reverse().join("/"))}</span><span style="flex:1">${esc(hd.label)}</span><button class="icon" data-act="delhol" aria-label="Supprimer">✕</button></div>`).join("") || `<p class="empty-note">Aucun pont ajouté.</p>`}</div>
       <div class="row" style="margin-top:10px"><input type="date" id="holDate" style="border:1px solid var(--line-strong);border-radius:6px;padding:6px 8px;background:var(--surface)"><input type="text" id="holLabel" placeholder="Pont de l'Ascension" style="flex:1 1 160px;min-width:0;border:1px solid var(--line-strong);border-radius:6px;padding:7px 9px;background:var(--surface)"><button class="btn sm primary" id="addHol">Ajouter</button></div>
     </div>`;
-  if (!canWrite) $("setPage").querySelectorAll("input,select,textarea,button").forEach(e => e.disabled = true);
+  if (!canWrite){
+    $("setPage").querySelectorAll("input,select,textarea,button").forEach(e => e.disabled = true);
+    $("expCard").querySelectorAll("input,button").forEach(e => e.disabled = false);   // l'export est en lecture seule : permis à tous
+  }
+}
+
+// ---------- export / sauvegarde ----------
+let expDu = "", expAu = "";
+function download(name, mime, text){
+  const a = document.createElement("a"), url = URL.createObjectURL(new Blob([text], {type: mime}));
+  a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+async function fetchCasesRange(du, au){   // lit directement en base (pas seulement les années affichées), par pages de 1000
+  const rows = [];
+  for (let start = 0; ; start += 1000){
+    let q = sb.from("cases").select(COLS).order("jour").order("ligne").range(start, start + 999);
+    if (du) q = q.gte("jour", du);
+    if (au) q = q.lte("jour", au);
+    const { data, error } = await q; if (error) throw error;
+    rows.push(...data); if (data.length < 1000) break;
+  }
+  return rows;
+}
+const csvCell = (v) => { let s = String(v ?? ""); if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; return /[;"\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
+async function exportPlanning(kind){
+  if (!sb){ notify("Export impossible : tu n'es pas connecté."); return; }
+  const du = $("expDu").value, au = $("expAu").value;
+  if (du && au && au < du){ notify("La date de fin est avant la date de début."); return; }
+  setStatus("Export en cours…");
+  let rows;
+  try { rows = await fetchCasesRange(du, au); } catch(err){ failed(err); return; }
+  const stamp = iso(new Date()), per = (du || au) ? `_${du || "debut"}_${au || "fin"}` : "_tout";
+  // nom, type et état de chaque ligne (y compris les personnes / véhicules supprimés depuis)
+  const lignes = new Map();
+  for (const [list, type] of [[settings.people, "Personne"], [settings.vehicles, "Véhicule"], [settings.materiel, "Matériel"]]) for (const r of (list||[])) lignes.set(r.id, {nom: r.name, type, masque: !!r.hidden});
+  if (kind === "json"){
+    const ids = [...new Set(rows.map(r => r.ligne))];
+    const inconnues = ids.filter(id => !lignes.has(id));
+    const out = {application:"planning-equipe", format:1, exporte_le:new Date().toISOString(), periode:{du:du || null, au:au || null},
+      reglages: settings, lignes: Object.fromEntries([...lignes].map(([id, l]) => [id, l])), lignes_supprimees: inconnues,
+      cases: rows.map(r => ({ligne:r.ligne, jour:r.jour, matin:r.matin, apres_midi:r.apres_midi, journee:r.journee, cat_matin:r.cat_matin, cat_apres_midi:r.cat_apres_midi}))};
+    download(`planning_sauvegarde${per}_${stamp}.json`, "application/json", JSON.stringify(out, null, 1));
+    setStatus(`Sauvegarde téléchargée (${rows.length} cases)`);
+    return;
+  }
+  const head = ["Date","Année","Mois","Semaine","Jour","Type","Nom","Moment","Texte","Catégorie","Jours","Jour ouvré"];
+  const lines = [head.join(";")];
+  for (const r of rows){
+    const l = lignes.get(r.ligne) || {nom: r.ligne + " (supprimé)", type: "Inconnu"};
+    const d = parseIso(r.jour), ouvre = d.getDay() !== 0 && d.getDay() !== 6 && !holidayName(r.jour);
+    const v = {am: r.matin || "", pm: r.apres_midi || "", full: !!r.journee, cam: r.cat_matin, cpm: r.cat_apres_midi};
+    const parts = v.full ? [["Journée", v.am, "am", 1]] : [["Matin", v.am, "am", .5], ["Après-midi", v.pm, "pm", .5]];
+    for (const [moment, txt, half, w] of parts){
+      if (!txt) continue;
+      const cat = l.type === "Personne" ? catOf(v, half) : null;
+      lines.push([r.jour, d.getFullYear(), MONTHS[d.getMonth()], isoWeek(d), DAYS_LONG[d.getDay()], l.type, l.nom, moment, txt, cat ? cat.label : "",
+        l.type === "Personne" ? String(w).replace(".", ",") : "", ouvre ? "oui" : "non"].map(csvCell).join(";"));
+    }
+  }
+  download(`planning_export${per}_${stamp}.csv`, "text/csv;charset=utf-8", "﻿" + lines.join("\r\n"));
+  setStatus(`Export téléchargé (${lines.length - 1} lignes)`);
 }
 
 function renderAll(){
@@ -932,6 +1017,11 @@ function subscribeYear(y){
 function applySettings(d){
   settings = {people:[], vehicles:[], materiel:[], categories:DEFAULT_CATS, defaultCat:"b", extraHolidays:[], ...JSON.parse(JSON.stringify(d || {}))};
   if (!Array.isArray(settings.categories) || !settings.categories.length) settings.categories = JSON.parse(JSON.stringify(DEFAULT_CATS));
+  // « Temps partiel » est ajoutée une seule fois aux réglages existants (si on la supprime ensuite, elle ne revient pas)
+  if (!settings.catTpAjoutee){
+    settings.catTpAjoutee = true;
+    if (!settings.categories.some(c => c.id === "tp")) settings.categories.push(JSON.parse(JSON.stringify(DEFAULT_CATS.find(c => c.id === "tp"))));
+  }
 }
 async function loadSettings(){
   const { data, error } = await sb.from("reglages").select("donnees").eq("id", "principal").maybeSingle();
@@ -1045,6 +1135,10 @@ function openEditor(rowId, ds, isRes){
   $("edFull").value = v?.full ? v.am || "" : ""; $("edAm").value = v && !v.full ? v.am || "" : ""; $("edPm").value = v && !v.full ? v.pm || "" : "";
   if (v && v.full === false && !$("edAm").value && !$("edPm").value) ed.mode = "half";
   $("edUntil").value = ""; $("edUntil").min = ds;
+  // rythme régulier : décoché à l'ouverture, le jour de la semaine cliqué est pré-sélectionné
+  $("edWeekly").checked = false; $("fWeekly").hidden = !!isRes;
+  ed.wdays = new Set(d.getDay() >= 1 && d.getDay() <= 5 ? [d.getDay()] : []);
+  renderWeekly();
   ed.personName = who ? who.name : "";
   // catégorie par champ : {id, manual}. Une catégorie enregistrée différente de la détection compte comme choisie à la main.
   const initCat = (half) => {
@@ -1059,7 +1153,7 @@ function openEditor(rowId, ds, isRes){
           : {edFull: none(), edAm: none(), edPm: none()};
   $("edStamp").hidden = false;
   ed.veh = new Set(); ed.vehBefore = new Set();
-  if (!isRes) for (const vv of bookable()){ const c = getCell(vv.id, ds); if (c?.am && norm(c.am) === norm(ed.personName)){ ed.veh.add(vv.id); ed.vehBefore.add(vv.id); } }
+  if (!isRes) for (const vv of bookableAll()){ const c = getCell(vv.id, ds); if (c?.am && norm(c.am) === norm(ed.personName)){ ed.veh.add(vv.id); ed.vehBefore.add(vv.id); } }
   $("edMode").hidden = !!isRes;
   $("fFull").querySelector("label").textContent = isRes ? "Réservation (qui / pour quoi)" : "Journée";
   setMode(ed.mode);
@@ -1068,6 +1162,31 @@ function openEditor(rowId, ds, isRes){
   $("scrim").hidden = false; $("drawer").hidden = false;
   setTimeout(() => (ed.mode === "full" ? $("edFull") : $("edAm")).focus(), 30);
   updatePreviews();
+}
+// ----- rythme régulier (télétravail, temps partiel…) : même saisie sur certains jours de la semaine, jusqu'à une date (défaut : fin d'année)
+function weeklyEnd(){ return $("edUntil").value || `${ed.ds.slice(0,4)}-12-31`; }
+function renderWeekly(){
+  if (!ed) return;
+  const on = $("edWeekly").checked;
+  $("edWeekDays").hidden = !on; $("edWeeklyHint").hidden = !on;
+  $("edWeekDays").innerHTML = [1,2,3,4,5].map(n => `<button type="button" data-wd="${n}" aria-pressed="${ed.wdays.has(n)}">${DAYS[n]}</button>`).join("");
+  if (!on) return;
+  const names = [1,2,3,4,5].filter(n => ed.wdays.has(n)).map(n => DAYS_LONG[n]);
+  const fin = parseIso(weeklyEnd());
+  $("edWeeklyHint").textContent = names.length
+    ? `Chaque ${names.join(", ")}, jusqu'au ${fin.getDate()} ${MONTHS[fin.getMonth()]} ${fin.getFullYear()} (change la date « Répéter jusqu'au » ci-dessus pour une autre fin). Les week-ends, jours fériés et cases déjà remplies sont sautés ; pour une demi-journée, seule la moitié vide est remplie. « Effacer » ne retire que les cases identiques à celle-ci.`
+    : "Choisis au moins un jour de la semaine.";
+}
+// fusion d'une saisie régulière avec une case existante : jamais d'écrasement (null = on saute le jour)
+function mergeWeekly(cur, val){
+  if (!cur) return val;
+  if (cur.full) return null;
+  const b = {am: cur.am || "", pm: cur.pm || "", cam: cur.cam || null, cpm: cur.cpm || null};
+  if (val.full) return (b.am || b.pm) ? null : val;
+  let changed = false;
+  if (val.am && !b.am){ b.am = val.am; b.cam = val.cam || null; changed = true; }
+  if (val.pm && !b.pm){ b.pm = val.pm; b.cpm = val.cpm || null; changed = true; }
+  return changed ? {...b, full:false} : null;
 }
 let lastField = "edFull";
 function setMode(mode){
@@ -1101,20 +1220,28 @@ function renderPick(field){
   $(nt).innerHTML = note;
 }
 function updatePreviews(){ if (!ed) return; renderPick("edFull"); renderPick("edAm"); renderPick("edPm"); renderVeh(); }
-const VEH_CATS = ["t","reu"];
 const bookable = () => (settings.vehicles||[]).filter(v => !/manquant/i.test(v.name));
-function needsVehicle(){
-  if (!ed || ed.isRes) return null;
+const bookableAll = () => [...bookable(), ...(settings.materiel||[])];
+// ce que la saisie en cours propose : véhicules et/ou matériel selon la catégorie choisie (réglage de chaque catégorie)
+function needsRes(){
+  const out = {veh:false, mat:false, cats:[]};
+  if (!ed || ed.isRes) return out;
   const fields = ed.mode === "full" ? ["edFull"] : ["edAm","edPm"];
-  for (const f of fields){ const c = $(f).value.trim() ? catById(ed.cats[f].id) : null; if (c && VEH_CATS.includes(c.id)) return c; }
-  return null;
+  for (const f of fields){
+    const c = $(f).value.trim() ? catById(ed.cats[f].id) : null; if (!c) continue;
+    const v = offers(c, "veh"), m = offers(c, "mat");
+    if (v || m){ out.veh = out.veh || v; out.mat = out.mat || m; if (!out.cats.includes(c.label)) out.cats.push(c.label); }
+  }
+  return out;
 }
 function renderVeh(){
-  const box = $("edVeh"); const c = needsVehicle(); const list = bookable();
-  const show = !!(c && list.length) || (ed && ed.veh && ed.veh.size > 0 && list.length);
-  if (!show){ box.hidden = true; box.dataset.shown = ""; return; }
+  const box = $("edVeh"); const need = needsRes();
+  const vehs = bookable(), mats = settings.materiel || [];
+  const held = (list) => !!ed && list.some(r => ed.veh.has(r.id));
+  const showV = vehs.length && (need.veh || held(vehs)), showM = mats.length && (need.mat || held(mats));
+  if (!showV && !showM){ box.hidden = true; box.dataset.shown = ""; return; }
   const me = ed.personName;
-  box.innerHTML = `<h4>Réserver un véhicule ?</h4><div class="why">${c ? `« ${esc(c.label)} » détecté. ` : ""}Coche le véhicule à réserver pour ce jour.</div><div class="vehlist">` +
+  const section = (title, list, noun) => `<div class="why"><b>${title}</b> · coche ce qui est à réserver pour ce jour.</div><div class="vehlist">` +
     list.map(v => {
       const cur = getCell(v.id, ed.ds); const who = cur?.am || "";
       const mine = who && norm(who) === norm(me);
@@ -1122,6 +1249,9 @@ function renderVeh(){
       const on = ed.veh.has(v.id);
       return `<button type="button" class="veh${busy?" busy":""}" data-veh="${esc(v.id)}" aria-pressed="${on}"${busy?" aria-disabled=\"true\"":""}><span class="box">${on?"✓":""}</span><span class="nm">${esc(v.name)}</span><span class="st">${busy ? "pris : " + esc(who) : mine ? "réservé pour toi" : "libre"}</span></button>`;
     }).join("") + `</div>`;
+  const what = showV && showM ? "un véhicule ou du matériel" : showV ? "un véhicule" : "du matériel";
+  box.innerHTML = `<h4>Réserver ${what} ?</h4>${need.cats.length ? `<div class="why">« ${esc(need.cats.join(" », « "))} » détecté.</div>` : ""}` +
+    (showV ? section("Véhicules", vehs) : "") + (showM ? section("Matériel (plusieurs choix possibles)", mats) : "");
   if (box.hidden){ box.hidden = false; }
 }
 function closeEditor(){ $("scrim").hidden = true; $("drawer").hidden = true; ed = null; }
@@ -1138,21 +1268,35 @@ function saveEditor(clear){
   // la case ouverte : enregistrée seulement si personne ne l'a changée depuis l'ouverture
   const ops = [{ligne: ed.rowId, jour: ed.ds, mode: "ecrire", valeur: val, version: ed.version}];
   const daysList = [ed.ds];
-  const until = $("edUntil").value;
+  const weekly = !ed.isRes && $("edWeekly").checked && ed.wdays.size > 0;
+  const until = $("edUntil").value || (weekly ? weeklyEnd() : "");
+  const orig = getCell(ed.rowId, ed.ds);   // valeur de la case ouverte avant modification (sert à « Effacer » en rythme régulier)
+  let ignored = 0;
   if (until && until > ed.ds){
     const d = parseIso(ed.ds); d.setDate(d.getDate()+1);
     const end = parseIso(until);
     let guard = 0;
     while (d <= end && guard++ < 400){
       const ds = iso(d), wd = d.getDay();
-      if (wd !== 0 && wd !== 6 && !holidayName(ds)){ ops.push({ligne: ed.rowId, jour: ds, mode: "ecrire", valeur: val}); daysList.push(ds); }
+      if (wd !== 0 && wd !== 6 && !holidayName(ds)){
+        if (!weekly){ ops.push({ligne: ed.rowId, jour: ds, mode: "ecrire", valeur: val}); daysList.push(ds); }
+        else if (ed.wdays.has(wd)){
+          const c = getCell(ed.rowId, ds), k = keyOf(ed.rowId, ds);
+          if (clear){ if (c && sameCell(c, orig)){ ops.push({ligne: ed.rowId, jour: ds, mode: "ecrire", valeur: null, version: metaVer(k)}); daysList.push(ds); } }
+          else {
+            const m = mergeWeekly(c, val);
+            if (m && !sameCell(c, m)){ ops.push({ligne: ed.rowId, jour: ds, mode: "ecrire", valeur: m, version: metaVer(k)}); daysList.push(ds); }
+            else if (!m) ignored++;
+          }
+        }
+      }
       d.setDate(d.getDate()+1);
     }
   }
   // réservations de véhicules (mêmes jours que la saisie) : le serveur refuse un véhicule déjà pris
   let skipped = 0;
   if (!ed.isRes && (ed.veh.size || ed.vehBefore.size)){
-    for (const v of bookable()){
+    for (const v of bookableAll()){
       const want = !clear && ed.veh.has(v.id), had = ed.vehBefore.has(v.id);
       if (!want && !had) continue;
       for (const ds of daysList){
@@ -1174,8 +1318,10 @@ function saveEditor(clear){
       msgs.push(`${rowName(c.ligne)}, ${DAYS_LONG[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]} : cette case vient d'être modifiée par ${quiEst(c.par)}. Ta saisie n'a pas été enregistrée, la nouvelle valeur est affichée.`);
     }
     const n = pris.length + skipped;
-    if (n) msgs.push(`${n} jour${n>1?"s":""} non réservé${n>1?"s":""} : véhicule déjà pris${pris[0] ? " par " + pris[0].qui : ""}.`);
+    if (n) msgs.push(`${n} jour${n>1?"s":""} non réservé${n>1?"s":""} : véhicule ou matériel déjà pris${pris[0] ? " par " + pris[0].qui : ""}.`);
+    if (ignored) msgs.push(`${ignored} jour${ignored>1?"s":""} du rythme régulier ignoré${ignored>1?"s":""} : case déjà remplie.`);
     if (msgs.length) notify(msgs.join(" "));
+    else if (weekly && daysList.length > 1) setStatus(`Rythme régulier posé sur ${daysList.length} jours`);
   });
 }
 const rowNameOf = (id) => ([...(settings.people||[]), ...(settings.vehicles||[]), ...(settings.materiel||[])].find(x => x.id === id) || {}).name || id;
@@ -1260,7 +1406,7 @@ function applyStamp(el, ev){
   if (sameCell(cur, val)){ setStatus("Déjà rempli avec le tampon"); return; }
   const k = keyOf(rowId, ds);
   const sc = catById(stamp.cam) || catFor(stamp.am);
-  const vehHint = !isRes && sc && VEH_CATS.includes(sc.id) && bookable().length ? " · pense au véhicule" : "";
+  const vehHint = !isRes && sc && ((offers(sc,"veh") && bookable().length) || (offers(sc,"mat") && (settings.materiel||[]).length)) ? " · pense au véhicule / matériel" : "";
   // version : si un collègue vient de modifier cette case, on ne l'écrase pas
   commit([{ligne: rowId, jour: ds, mode: "ecrire", valeur: val, version: metaVer(k)}]).then((conflits) => {
     if (!conflits) return;
@@ -1326,7 +1472,9 @@ $("edQuick").addEventListener("click", e => { const b = e.target.closest("button
   $(lastField).value = q; ed.cats[lastField] = {id: catFor(q)?.id || null, manual: false}; updatePreviews(); $(lastField).focus(); });
 $("drawer").addEventListener("click", e => {
   const pk = e.target.closest("button[data-pick]");
-  if (pk){ ed.cats[pk.dataset.field] = {id: pk.dataset.pick, manual: true}; lastField = pk.dataset.field; renderPick(pk.dataset.field); renderVeh(); return; }
+  if (pk){ ed.cats[pk.dataset.field] = {id: pk.dataset.pick, manual: true};
+    const pc = catById(pk.dataset.pick); if (pc && pc.fill && !$(pk.dataset.field).value.trim()) $(pk.dataset.field).value = pc.fill;   // texte posé automatiquement (ex. « Ne travaille pas »)
+    lastField = pk.dataset.field; renderPick(pk.dataset.field); renderVeh(); return; }
   const au = e.target.closest("button[data-auto]");
   if (au){ ed.cats[au.dataset.auto].manual = false; renderPick(au.dataset.auto); renderVeh(); $(au.dataset.auto).focus(); }
 });
@@ -1344,6 +1492,10 @@ $("stampBar").addEventListener("click", e => {
 });
 $("edVeh").addEventListener("click", e => { const b = e.target.closest("button[data-veh]"); if (!b || b.getAttribute("aria-disabled") === "true") return;
   const id = b.dataset.veh; ed.veh.has(id) ? ed.veh.delete(id) : ed.veh.add(id); renderVeh(); });
+$("edWeekly").addEventListener("change", renderWeekly);
+$("edUntil").addEventListener("change", renderWeekly);
+$("edWeekDays").addEventListener("click", e => { const b = e.target.closest("button[data-wd]"); if (!b) return;
+  const n = Number(b.dataset.wd); ed.wdays.has(n) ? ed.wdays.delete(n) : ed.wdays.add(n); renderWeekly(); });
 $("edSave").onclick = () => saveEditor(false);
 $("edClear").onclick = () => saveEditor(true);
 $("edCancel").onclick = closeEditor; $("scrim").onclick = closeEditor;
@@ -1360,12 +1512,16 @@ document.addEventListener("keydown", e => {
 const LISTS = {people:"p", vehicles:"v", materiel:"m"};
 $("setPage").addEventListener("change", e => {
   const el = e.target;
+  if (el.id === "expDu"){ expDu = el.value; return; }
+  if (el.id === "expAu"){ expAu = el.value; return; }
   if (el.name === "defcat"){ settings.defaultCat = el.value; saveSettings(true); renderAll(); return; }
   const cc = el.closest("[data-cat]");
   if (cc){
     const c = settings.categories.find(x => x.id === cc.dataset.cat); if (!c) return;
     const f = el.dataset.f;
     if (f === "words") c.words = el.value.split(",").map(s => s.trim()).filter(Boolean);
+    else if (el.type === "checkbox") c[f] = el.checked;
+    else if (f === "fill") c.fill = el.value.trim();
     else c[f] = el.value;
     if (f === "color"){ el.parentElement.style.background = el.value; delete c.ink; }
     if (f === "icon"){ const pv = cc.querySelector(".icprev"); if (pv) pv.innerHTML = ico(el.value, 20); }
@@ -1386,6 +1542,7 @@ $("setPage").addEventListener("click", e => {
   if (b.id === "resetCats"){
     if (b.dataset.confirm !== "1"){ b.dataset.confirm = "1"; b.textContent = "Confirmer : tout remettre à l'origine ?"; return; }
     settings.categories = JSON.parse(JSON.stringify(DEFAULT_CATS)); settings.defaultCat = "b"; saveSettings(true); renderAll(); return; }
+  if (b.id === "expJson" || b.id === "expCsv"){ exportPlanning(b.id === "expCsv" ? "csv" : "json"); return; }
   if (b.id === "addHol"){
     const d = $("holDate").value, l = $("holLabel").value.trim(); if (!d) { $("holDate").focus(); return; }
     settings.extraHolidays = (settings.extraHolidays||[]).filter(h => h.date !== d).concat([{date:d, label:l || "Pont"}]); saveSettings(true); renderAll(); return; }
